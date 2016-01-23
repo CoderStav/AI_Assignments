@@ -41,6 +41,10 @@ public class EightPuzzle extends Object{
 		return Arrays.equals(this.configuration, this.winConfiguration);
 	}
 	
+	public boolean equals(EightPuzzle puzzle){
+		return this.configuration.equals(puzzle.configuration);
+	}
+	
 	public void move(int piece){
 		// error handle this later
 		int piecePosition = 0;

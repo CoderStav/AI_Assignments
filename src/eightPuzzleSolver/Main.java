@@ -22,11 +22,11 @@ public class Main {
 		
 		Search theSearch = new Search();
 		
-		theSearch.BreadthFirst(easy);
-		//Search.BreadthFirst(med);
+		theSearch.breadthFirst(easy);
+		// theSearch.breadthFirst(med);
 		
 		// this one fails.
-		// Search.BreadthFirst(hard);
+		//theSearch.breadthFirst(hard);
 		
 	}
 

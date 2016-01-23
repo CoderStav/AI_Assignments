@@ -1,5 +1,6 @@
 package eightPuzzleSolver;
 import java.util.Queue;
+import java.util.Stack;
 import java.util.LinkedList;
 
 public class Search {
@@ -17,15 +18,15 @@ public class Search {
 	}
 	
 	public Search(){
-		//nothing
 	};
 	
-	public void BreadthFirst(EightPuzzle puzzle){
+	public void breadthFirst(EightPuzzle puzzle){
 		
 		Node puzzleParent, puzzleChild;
-		puzzleParent = new Node(new EightPuzzle(puzzle), null);
+		int[] possibleMoves;
 		
-		int[] possibleMoves = puzzleParent.puzzle.possibleMoves();
+		puzzleParent = new Node(new EightPuzzle(puzzle), null);
+		possibleMoves = puzzleParent.puzzle.possibleMoves();
 		
 		Queue<Node> moveQueue = new LinkedList<Node>();
 		moveQueue.add(puzzleParent);
@@ -33,14 +34,19 @@ public class Search {
 		while(true){
 			puzzleParent = moveQueue.remove();
 			
-			puzzleParent.puzzle.display();
-			
 			if(puzzleParent.puzzle.isSolved()){
+				Stack<Node> WinningMoves = new Stack<Node>();
+				
 				System.out.println("======== Puzzle Solved! ========");
+				WinningMoves.push(puzzleParent);
 				while(puzzleParent.parent != null){
+					WinningMoves.push(puzzleParent.parent);
 					puzzleParent = puzzleParent.parent;
-					puzzleParent.puzzle.display();
 				}
+				
+				while(!WinningMoves.isEmpty())
+					WinningMoves.pop().puzzle.display();
+				
 				return;
 			}
 			
@@ -55,6 +61,26 @@ public class Search {
 			}
 		}
 		
+	}
+	
+	public void depthFirst(){
+		// TODO
+	}
+	
+	public void uniformCost(){
+		// TODO
+	}
+	
+	public void bestFirst(){
+		// TODO
+	}
+	
+	public void A1(){
+		// TODO
+	}
+	
+	public void A2(){
+		// TODO
 	}
 	
 }
