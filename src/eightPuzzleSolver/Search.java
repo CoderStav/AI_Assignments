@@ -4,43 +4,56 @@ import java.util.LinkedList;
 
 public class Search {
 	
-	public static void BreadthFirst(EightPuzzle puzzle){
+	private class Node{
 		
-		Queue<EightPuzzle> moveQueue = new LinkedList<EightPuzzle>();
-		int[] possibleMoves = puzzle.possibleMoves();
-		EightPuzzle puzzleCopy, puzzleMain;
+		public EightPuzzle puzzle;
+		public Node parent;
 		
-		for(int i = 0; i < possibleMoves.length; ++i){
-			puzzleCopy = new EightPuzzle(puzzle);
-			if(possibleMoves[i] > 0){
-				puzzleCopy.move(possibleMoves[i]);
-				moveQueue.add(puzzleCopy);
-			}
+		public Node(EightPuzzle puzzle, Node parent){
+			this.puzzle = new EightPuzzle(puzzle);
+			this.parent = parent;
 		}
 		
-		int count = 0;
+	}
+	
+	public Search(){
+		//nothing
+	};
+	
+	public void BreadthFirst(EightPuzzle puzzle){
+		
+		Node puzzleParent, puzzleChild;
+		puzzleParent = new Node(new EightPuzzle(puzzle), null);
+		
+		int[] possibleMoves = puzzleParent.puzzle.possibleMoves();
+		
+		Queue<Node> moveQueue = new LinkedList<Node>();
+		moveQueue.add(puzzleParent);
+		
 		while(true){
+			puzzleParent = moveQueue.remove();
 			
-			puzzleMain = moveQueue.remove();
+			puzzleParent.puzzle.display();
 			
-			if(puzzleMain.isSolved()){
-				System.out.println("Puzzle Solved!");
+			if(puzzleParent.puzzle.isSolved()){
+				System.out.println("======== Puzzle Solved! ========");
+				while(puzzleParent.parent != null){
+					puzzleParent = puzzleParent.parent;
+					puzzleParent.puzzle.display();
+				}
 				return;
 			}
 			
-			possibleMoves = puzzleMain.possibleMoves();
+			possibleMoves = puzzleParent.puzzle.possibleMoves();
 			
 			for(int i = 0; i < possibleMoves.length; ++i){
-				puzzleCopy = new EightPuzzle(puzzleMain);
+				puzzleChild = new Node(new EightPuzzle(puzzleParent.puzzle), puzzleParent);
 				if(possibleMoves[i] > 0){
-					puzzleCopy.move(possibleMoves[i]);
-					moveQueue.add(puzzleCopy);
+					puzzleChild.puzzle.move(possibleMoves[i]);
+					moveQueue.add(puzzleChild);
 				}
 			}
-			
-			count++;
 		}
-				
 		
 	}
 	

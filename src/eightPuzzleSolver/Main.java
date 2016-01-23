@@ -18,9 +18,12 @@ public class Main {
 			return;
 		}
 		
-		// these two searches are succesful
-		Search.BreadthFirst(easy);
-		Search.BreadthFirst(med);
+		// these two searches are successful
+		
+		Search theSearch = new Search();
+		
+		theSearch.BreadthFirst(easy);
+		//Search.BreadthFirst(med);
 		
 		// this one fails.
 		// Search.BreadthFirst(hard);
