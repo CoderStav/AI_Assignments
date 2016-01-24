@@ -10,6 +10,7 @@ public class Search {
 		public EightPuzzle puzzle;
 		public Node parent;
 		public int lastMove = 0;
+		public int level = 0;
 		
 		public Node(EightPuzzle puzzle, Node parent){
 			this.puzzle = new EightPuzzle(puzzle);
@@ -21,6 +22,7 @@ public class Search {
 	private void displayWinMoves(Node winPuzzle){
 		Stack<Node> WinningMoves = new Stack<Node>();
 		Node winMove = winPuzzle;
+		int score = 0;
 		
 		System.out.println("======== Puzzle Solved! ========");
 		WinningMoves.push(winMove);
@@ -29,8 +31,13 @@ public class Search {
 			winMove = winMove.parent;
 		}
 		
-		while(!WinningMoves.isEmpty())
-			WinningMoves.pop().puzzle.display();
+		while(!WinningMoves.isEmpty()){
+			winMove = WinningMoves.pop();
+			winMove.puzzle.display();
+			score += winMove.lastMove;
+		}
+		System.out.println(score);
+			
 	}
 	
 	public Search(){
@@ -47,20 +54,21 @@ public class Search {
 		
 		int statesChecked = 0;
 		while(true){
-			if(++statesChecked % 100000 == 0)
+			if(++statesChecked % 1000000 == 0)
 				System.out.println(statesChecked);
 			
 			currentPuzzle = moveQueue.remove();
 			
 			if(currentPuzzle.puzzle.isSolved()){
 				displayWinMoves(currentPuzzle);
-				System.out.println(statesChecked);
+				//System.out.println(statesChecked);
 				return;
 			}
 			
 			possibleMoves = currentPuzzle.puzzle.possibleMoves();
 			
 			for(int i = 0; i < possibleMoves.length; ++i){
+				
 				childMove = possibleMoves[i];
 				
 				if(childMove > 0 && childMove != currentPuzzle.lastMove){

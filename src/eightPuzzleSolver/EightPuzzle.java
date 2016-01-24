@@ -41,8 +41,14 @@ public class EightPuzzle extends Object{
 		return Arrays.equals(this.configuration, this.winConfiguration);
 	}
 	
-	public boolean equals(EightPuzzle puzzle){
-		return Arrays.equals(this.configuration, puzzle.configuration);
+	@Override
+	public int hashCode(){	
+	    return Arrays.hashCode(this.configuration);
+	}
+	
+	@Override
+	public boolean equals(final Object puzzle){
+		return Arrays.equals(this.configuration, ((EightPuzzle) puzzle).configuration);
 	}
 	
 	public void move(int piece){

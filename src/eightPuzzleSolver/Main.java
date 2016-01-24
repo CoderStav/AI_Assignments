@@ -14,7 +14,7 @@ public class Main {
 		int[] medConfig = {2, 8, 1, 0, 4, 3, 7, 6, 5};
 		int[] hardConfig = {5, 6, 7, 4, 0, 8, 3, 2, 1};
 		
-		int[] customConfig = {2, 8, 3, 1, 6, 4, 7, 0, 5};
+		int[] customConfig = {5, 4, 0, 6, 1, 8, 7, 3, 2};
 		
 		EightPuzzle easy, med, hard, custom;
 		
