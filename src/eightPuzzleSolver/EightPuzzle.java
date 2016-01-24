@@ -4,7 +4,7 @@ import java.lang.System;
 
 public class EightPuzzle extends Object{
 
-	private int[] winConfiguration = {1, 2, 3, 8, 0, 4, 7, 6, 5};
+	private final int[] winConfiguration = {1, 2, 3, 8, 0, 4, 7, 6, 5};
 	
 	private int[] configuration = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 	private int emptySpace;
@@ -28,41 +28,12 @@ public class EightPuzzle extends Object{
 		}
 		
 		this.configuration = startingConfig;
-		
 	}
 	
 	// copy constructor
 	public EightPuzzle(EightPuzzle c){
 		System.arraycopy(c.configuration, 0, this.configuration, 0, c.configuration.length);
 		this.emptySpace = c.emptySpace;
-	}
-	
-	public boolean isSolved(){
-		return Arrays.equals(this.configuration, this.winConfiguration);
-	}
-	
-	@Override
-	public int hashCode(){	
-	    return Arrays.hashCode(this.configuration);
-	}
-	
-	@Override
-	public boolean equals(final Object puzzle){
-		return Arrays.equals(this.configuration, ((EightPuzzle) puzzle).configuration);
-	}
-	
-	public void move(int piece){
-		// error handle this later
-		int piecePosition = 0;
-		for(int i = 0; i < 9; ++i)
-			if(this.configuration[i] == piece)
-				piecePosition = i;
-		
-		this.configuration[this.emptySpace] = piece;
-		this.configuration[piecePosition] = 0;
-		
-		this.emptySpace = piecePosition;
-		
 	}
 	
 	private boolean sameRow(int x, int y){
@@ -84,6 +55,50 @@ public class EightPuzzle extends Object{
 		}
 		
 		return false;
+	}
+	
+	private int tilePosition(int tile){
+		for(int i = 0; i < this.configuration.length; ++i)
+			if(this.configuration[i] == tile)
+				return i;
+				
+		return -1;
+	}
+	
+	private int correctTilePosition(int tile){
+		for(int i = 0; i < this.winConfiguration.length; ++i)
+			if(this.winConfiguration[i] == tile)
+				return i;
+		
+		return -1;
+	}
+	
+	@Override
+	public int hashCode(){	
+	    return Arrays.hashCode(this.configuration);
+	}
+	
+	@Override
+	public boolean equals(final Object puzzle){
+		return Arrays.equals(this.configuration, ((EightPuzzle) puzzle).configuration);
+	}
+	
+	public boolean isSolved(){
+		return Arrays.equals(this.configuration, this.winConfiguration);
+	}
+	
+	public void move(int piece){
+		// error handle this later
+		int piecePosition = 0;
+		for(int i = 0; i < 9; ++i)
+			if(this.configuration[i] == piece)
+				piecePosition = i;
+		
+		this.configuration[this.emptySpace] = piece;
+		this.configuration[piecePosition] = 0;
+		
+		this.emptySpace = piecePosition;
+		
 	}
 	
 	public int[] possibleMoves(){
@@ -110,6 +125,37 @@ public class EightPuzzle extends Object{
 		
 		return validmoves;
 		
+	}
+	
+	public int manhattanDistance(int tile){
+		
+		if(tile > 0 || tile < 8) return -1;
+		
+		int position = tilePosition(tile);
+		int correctPosition = correctTilePosition(tile);
+		boolean[] possibleMovements;
+		
+		int i = 0;
+		while(position != correctPosition){
+			
+			/* {can go left, can go up, can go right, can go down} */
+			possibleMovements = new boolean[]{position % 3 >= 1, position >= 3, position % 3 <= 1, position <= 5};
+			
+			if(position > correctPosition && possibleMovements[0] && position - correctPosition < 3)
+				position += -1;
+			else if(position > correctPosition && possibleMovements[1] && position - correctPosition >= 3)
+				position += -3;
+			else if(position < correctPosition && possibleMovements[2] && correctPosition - position < 3)
+				position += 1;
+			else if(position < correctPosition && possibleMovements[3] && correctPosition - position >= 3)
+				position += 3;
+			
+			possibleMovements = null;
+			++i;
+			
+		}
+		
+		return i;
 	}
 	
 	public void display(){

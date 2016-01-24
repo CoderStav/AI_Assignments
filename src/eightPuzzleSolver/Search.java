@@ -19,6 +19,9 @@ public class Search {
 		
 	}
 	
+	public Search(){
+	}
+	
 	private void displayWinMoves(Node winPuzzle){
 		Stack<Node> WinningMoves = new Stack<Node>();
 		Node winMove = winPuzzle;
@@ -38,9 +41,6 @@ public class Search {
 		}
 		System.out.println(score);
 			
-	}
-	
-	public Search(){
 	}
 	
 	public void breadthFirst(EightPuzzle puzzle){

@@ -30,7 +30,6 @@ public class Main {
 		
 		Search theSearch = new Search();
 		
-		
 		/* GUI elements */
 		JPanel testButtonPanel = new JPanel();
 		
