@@ -9,6 +9,7 @@ public class Search {
 		
 		public EightPuzzle puzzle;
 		public Node parent;
+		public int lastMove = 0;
 		
 		public Node(EightPuzzle puzzle, Node parent){
 			this.puzzle = new EightPuzzle(puzzle);
@@ -39,13 +40,16 @@ public class Search {
 		
 		Node currentPuzzle, puzzleChild;
 		int[] possibleMoves;
-		int statesChecked;
+		int childMove;
 		
 		Queue<Node> moveQueue = new LinkedList<Node>();
 		moveQueue.add(new Node(new EightPuzzle(puzzle), null));
 		
-		statesChecked = 0;
+		int statesChecked = 0;
 		while(true){
+			if(++statesChecked % 100000 == 0)
+				System.out.println(statesChecked);
+			
 			currentPuzzle = moveQueue.remove();
 			
 			if(currentPuzzle.puzzle.isSolved()){
@@ -57,20 +61,18 @@ public class Search {
 			possibleMoves = currentPuzzle.puzzle.possibleMoves();
 			
 			for(int i = 0; i < possibleMoves.length; ++i){
-				puzzleChild = new Node(new EightPuzzle(currentPuzzle.puzzle), currentPuzzle);
-				if(possibleMoves[i] > 0){
-					puzzleChild.puzzle.move(possibleMoves[i]);
+				childMove = possibleMoves[i];
+				
+				if(childMove > 0 && childMove != currentPuzzle.lastMove){
+					puzzleChild = new Node(new EightPuzzle(currentPuzzle.puzzle), currentPuzzle);
 					
-					if(puzzleChild.parent == null || 
-							puzzleChild.parent.parent == null || 
-							!puzzleChild.puzzle.equals(puzzleChild.parent.parent.puzzle))
-						moveQueue.add(puzzleChild);
+					puzzleChild.puzzle.move(childMove);
+					puzzleChild.lastMove = childMove;
+					
+					moveQueue.add(puzzleChild);
 				}
 			}
-			
-			statesChecked++;
 		}
-		
 	}
 	
 	public void depthFirst(){
