@@ -1,7 +1,13 @@
 package eightPuzzleSolver;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+@SuppressWarnings("unused")
 
 public class Main {
-
+	
 	public static void main(String[] args) {
 		
 		int[] easyConfig = {1, 3, 4, 8, 6, 2, 7, 0, 5};
@@ -18,15 +24,35 @@ public class Main {
 			return;
 		}
 		
-		// these two searches are successful
-		
 		Search theSearch = new Search();
 		
-		theSearch.breadthFirst(easy);
-		// theSearch.breadthFirst(med);
 		
-		// this one fails.
-		//theSearch.breadthFirst(hard);
+		/* GUI elements */
+		JPanel testButtonPanel = new JPanel();
+		
+		JFrame guiFrame = new JFrame("EightPuzzleSolver");
+		guiFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		
+		Container guiContent = guiFrame.getContentPane();
+		Dimension frameDimensions = new Dimension(500, 500);
+		guiContent.setPreferredSize(frameDimensions);
+		
+		JButton runEasy = new JButton("Easy");
+		runEasy.addActionListener(e -> theSearch.breadthFirst(easy));
+		
+		JButton runMed = new JButton("Med");
+		runMed.addActionListener(e -> theSearch.breadthFirst(med));
+		
+		JButton runHard = new JButton("Hard");
+		runHard.addActionListener(e -> theSearch.breadthFirst(hard));
+		
+		testButtonPanel.add(runEasy);
+		testButtonPanel.add(runMed);
+		testButtonPanel.add(runHard);
+		guiFrame.add(testButtonPanel);
+		
+		guiFrame.pack();
+		guiFrame.setVisible(true);
 		
 	}
 

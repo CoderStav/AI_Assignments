@@ -42,7 +42,7 @@ public class EightPuzzle extends Object{
 	}
 	
 	public boolean equals(EightPuzzle puzzle){
-		return this.configuration.equals(puzzle.configuration);
+		return Arrays.equals(this.configuration, puzzle.configuration);
 	}
 	
 	public void move(int piece){
