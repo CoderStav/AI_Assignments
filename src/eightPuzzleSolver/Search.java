@@ -83,8 +83,46 @@ public class Search {
 		}
 	}
 	
-	public void depthFirst(){
-		// TODO
+	public void depthFirst(EightPuzzle puzzle, int maxDepth){
+		
+		Node currentPuzzle, puzzleChild;
+		int[] possibleMoves;
+		int childMove;
+		
+		Stack<Node> moveStack = new Stack<Node>();
+		moveStack.push(new Node(new EightPuzzle(puzzle), null));
+		
+		int statesChecked = 0;
+		do{
+			if(++statesChecked % 1000000 == 0)
+				System.out.println(statesChecked);
+			
+			currentPuzzle = moveStack.pop();
+			
+			if(currentPuzzle.puzzle.isSolved()){
+				displayWinMoves(currentPuzzle);
+				return;
+			}
+			
+			possibleMoves = currentPuzzle.puzzle.possibleMoves();
+			
+			if(currentPuzzle.level < maxDepth){
+				for(int i = 0; i < possibleMoves.length; ++i){
+					
+					childMove = possibleMoves[i];
+					
+					if(childMove > 0 && childMove != currentPuzzle.lastMove){
+						puzzleChild = new Node(new EightPuzzle(currentPuzzle.puzzle), currentPuzzle);
+						
+						puzzleChild.puzzle.move(childMove);
+						puzzleChild.lastMove = childMove;
+						puzzleChild.level = currentPuzzle.level + 1;
+						
+						moveStack.push(puzzleChild);
+					}
+				}
+			}
+		}while(!moveStack.isEmpty());
 	}
 	
 	public void uniformCost(){
