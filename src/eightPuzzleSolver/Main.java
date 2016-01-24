@@ -13,12 +13,16 @@ public class Main {
 		int[] easyConfig = {1, 3, 4, 8, 6, 2, 7, 0, 5};
 		int[] medConfig = {2, 8, 1, 0, 4, 3, 7, 6, 5};
 		int[] hardConfig = {5, 6, 7, 4, 0, 8, 3, 2, 1};
-		EightPuzzle easy, med, hard;
+		
+		int[] customConfig = {2, 8, 3, 1, 6, 4, 7, 0, 5};
+		
+		EightPuzzle easy, med, hard, custom;
 		
 		try {
 			easy = new EightPuzzle(easyConfig);
 			med = new EightPuzzle(medConfig);
 			hard = new EightPuzzle(hardConfig);
+			custom = new EightPuzzle(customConfig);
 		} catch (InvalidConfigurationException e) {
 			e.printStackTrace();
 			return;
@@ -46,9 +50,13 @@ public class Main {
 		JButton runHard = new JButton("Hard");
 		runHard.addActionListener(e -> theSearch.breadthFirst(hard));
 		
+		JButton runCustom = new JButton("Custom");
+		runCustom.addActionListener(e -> theSearch.breadthFirst(custom));
+		
 		testButtonPanel.add(runEasy);
 		testButtonPanel.add(runMed);
 		testButtonPanel.add(runHard);
+		testButtonPanel.add(runCustom);
 		guiFrame.add(testButtonPanel);
 		
 		guiFrame.pack();
