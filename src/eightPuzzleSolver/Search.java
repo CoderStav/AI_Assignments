@@ -11,6 +11,7 @@ public class Search {
 		public Node parent;
 		public int lastMove = 0;
 		public int level = 0;
+		public int score = 0;
 		
 		public Node(EightPuzzle puzzle, Node parent){
 			this.puzzle = new EightPuzzle(puzzle);
@@ -25,7 +26,6 @@ public class Search {
 	private void displayWinMoves(Node winPuzzle){
 		Stack<Node> WinningMoves = new Stack<Node>();
 		Node winMove = winPuzzle;
-		int score = 0;
 		
 		System.out.println("======== Puzzle Solved! ========");
 		WinningMoves.push(winMove);
@@ -37,9 +37,8 @@ public class Search {
 		while(!WinningMoves.isEmpty()){
 			winMove = WinningMoves.pop();
 			winMove.puzzle.display();
-			score += winMove.lastMove;
 		}
-		System.out.println(score);
+		System.out.println(winPuzzle.score);
 			
 	}
 	
@@ -53,7 +52,7 @@ public class Search {
 		moveQueue.add(new Node(new EightPuzzle(puzzle), null));
 		
 		int statesChecked = 0;
-		while(true){
+		do{
 			if(++statesChecked % 1000000 == 0)
 				System.out.println(statesChecked);
 			
@@ -61,7 +60,6 @@ public class Search {
 			
 			if(currentPuzzle.puzzle.isSolved()){
 				displayWinMoves(currentPuzzle);
-				//System.out.println(statesChecked);
 				return;
 			}
 			
@@ -77,10 +75,15 @@ public class Search {
 					puzzleChild.puzzle.move(childMove);
 					puzzleChild.lastMove = childMove;
 					
+					// TODO figure out how to record level for BFS
+					
+					puzzleChild.score = currentPuzzle.score + childMove;
+					
 					moveQueue.add(puzzleChild);
 				}
 			}
-		}
+			
+		}while(!moveQueue.isEmpty());
 	}
 	
 	public void depthFirst(EightPuzzle puzzle, int maxDepth){
@@ -117,12 +120,15 @@ public class Search {
 						puzzleChild.puzzle.move(childMove);
 						puzzleChild.lastMove = childMove;
 						puzzleChild.level = currentPuzzle.level + 1;
+						puzzleChild.score = currentPuzzle.score + childMove;
 						
 						moveStack.push(puzzleChild);
 					}
 				}
 			}
+			
 		}while(!moveStack.isEmpty());
+		
 	}
 	
 	public void uniformCost(){
