@@ -25,7 +25,7 @@ public class Search {
 	public Search(){
 	}
 	
-	private void displayWinMoves(Node winPuzzle){
+	private void displayWinMoves(Node winPuzzle, int numExpand){
 		Stack<Node> WinningMoves = new Stack<Node>();
 		Node winMove = winPuzzle;
 		
@@ -40,7 +40,10 @@ public class Search {
 			winMove = WinningMoves.pop();
 			winMove.puzzle.display();
 		}
-		System.out.println(winPuzzle.score);
+		System.out.println();
+		System.out.println("~~ Search Metrics ~~");
+		System.out.printf("Solution Score: %d\n", winPuzzle.score);
+		System.out.printf("Nodes Expanded: %d", numExpand);
 			
 	}
 	
@@ -61,7 +64,7 @@ public class Search {
 			currentPuzzle = moveQueue.remove();
 			
 			if(currentPuzzle.puzzle.isSolved()){
-				displayWinMoves(currentPuzzle);
+				displayWinMoves(currentPuzzle, statesChecked);
 				return;
 			}
 			
@@ -105,7 +108,7 @@ public class Search {
 			currentPuzzle = moveStack.pop();
 			
 			if(currentPuzzle.puzzle.isSolved()){
-				displayWinMoves(currentPuzzle);
+				displayWinMoves(currentPuzzle, statesChecked);
 				return;
 			}
 			
@@ -154,7 +157,7 @@ public class Search {
 			currentPuzzle = moveQueue.poll();
 			
 			if(currentPuzzle.puzzle.isSolved()){
-				displayWinMoves(currentPuzzle);
+				displayWinMoves(currentPuzzle, statesChecked);
 				return;
 			}
 			
@@ -181,8 +184,55 @@ public class Search {
 		}while(!moveQueue.isEmpty());
 	}
 	
-	public void bestFirst(){
-		// TODO
+	public void bestFirst(EightPuzzle puzzle){
+		
+		Node currentPuzzle, puzzleChild;
+		int[] possibleMoves;
+		int childMove;
+		
+		PriorityQueue<Node> moveQueue = new PriorityQueue<Node>(10, new Comparator<Node>(){
+			
+			public int compare(Node n1, Node n2){
+				return n1.lastMove - n2.lastMove;
+			}
+			
+		});
+		
+		moveQueue.add(new Node(new EightPuzzle(puzzle), null));
+		
+		int statesChecked = 0;
+		do{
+			if(++statesChecked % 1000000 == 0)
+				System.out.println(statesChecked);
+			
+			currentPuzzle = moveQueue.poll();
+			
+			if(currentPuzzle.puzzle.isSolved()){
+				displayWinMoves(currentPuzzle, statesChecked);
+				return;
+			}
+			
+			possibleMoves = currentPuzzle.puzzle.possibleMoves();
+			
+			for(int i = 0; i < possibleMoves.length; ++i){
+				
+				childMove = possibleMoves[i];
+				
+				if(childMove > 0 && childMove != currentPuzzle.lastMove){
+					puzzleChild = new Node(new EightPuzzle(currentPuzzle.puzzle), currentPuzzle);
+					
+					puzzleChild.puzzle.move(childMove);
+					puzzleChild.lastMove = childMove;
+					
+					// TODO figure out how to record level for GBFS
+					
+					puzzleChild.score = currentPuzzle.score + childMove;
+					
+					moveQueue.add(puzzleChild);
+				}
+			}
+			
+		}while(!moveQueue.isEmpty());
 	}
 	
 	public void A1(){

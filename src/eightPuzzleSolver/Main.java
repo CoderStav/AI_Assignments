@@ -100,7 +100,7 @@ public class Main {
 			else if(uniformCostSearchBtn.isSelected())
 				theSearch.uniformCost(puzz);
 			else if(bestFirstSearchBtn.isSelected())
-				System.out.println("Not implemeneted");
+				theSearch.bestFirst(puzz);
 			else if(A1Search.isSelected())
 				System.out.println("Not implemeneted");
 			else if(A2Search.isSelected())
