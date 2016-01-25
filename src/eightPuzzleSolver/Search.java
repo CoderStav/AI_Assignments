@@ -1,5 +1,7 @@
 package eightPuzzleSolver;
+import java.util.Comparator;
 import java.util.Queue;
+import java.util.PriorityQueue;
 import java.util.Stack;
 import java.util.LinkedList;
 
@@ -131,8 +133,52 @@ public class Search {
 		
 	}
 	
-	public void uniformCost(){
-		// TODO
+	public void uniformCost(EightPuzzle puzzle){
+		Node currentPuzzle, puzzleChild;
+		int[] possibleMoves;
+		int childMove;
+		
+		PriorityQueue<Node> moveQueue = new PriorityQueue<Node>(10, new Comparator<Node>(){
+			public int compare(Node n1, Node n2){
+				return n1.score - n2.score;
+			}
+		});
+		
+		moveQueue.add(new Node(new EightPuzzle(puzzle), null));
+		
+		int statesChecked = 0;
+		do{
+			if(++statesChecked % 1000000 == 0)
+				System.out.println(statesChecked);
+			
+			currentPuzzle = moveQueue.poll();
+			
+			if(currentPuzzle.puzzle.isSolved()){
+				displayWinMoves(currentPuzzle);
+				return;
+			}
+			
+			possibleMoves = currentPuzzle.puzzle.possibleMoves();
+			
+			for(int i = 0; i < possibleMoves.length; ++i){
+				
+				childMove = possibleMoves[i];
+				
+				if(childMove > 0 && childMove != currentPuzzle.lastMove){
+					puzzleChild = new Node(new EightPuzzle(currentPuzzle.puzzle), currentPuzzle);
+					
+					puzzleChild.puzzle.move(childMove);
+					puzzleChild.lastMove = childMove;
+					
+					// TODO figure out how to record level for UCS
+					
+					puzzleChild.score = currentPuzzle.score + childMove;
+					
+					moveQueue.add(puzzleChild);
+				}
+			}
+			
+		}while(!moveQueue.isEmpty());
 	}
 	
 	public void bestFirst(){

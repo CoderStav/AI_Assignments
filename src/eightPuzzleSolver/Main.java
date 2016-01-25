@@ -98,7 +98,7 @@ public class Main {
 			else if(depthFirstSearchBtn.isSelected())
 				theSearch.depthFirst(puzz, 31);
 			else if(uniformCostSearchBtn.isSelected())
-				System.out.println("Not implemented");
+				theSearch.uniformCost(puzz);
 			else if(bestFirstSearchBtn.isSelected())
 				System.out.println("Not implemeneted");
 			else if(A1Search.isSelected())
