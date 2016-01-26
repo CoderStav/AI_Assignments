@@ -13,11 +13,15 @@ public class Search{
 	
 	private HashSet<EightPuzzle> puzzlePermutations = new HashSet<EightPuzzle>();
 	
+	
+	/*
+	 * Private Node subclass.
+	 * Holds EightPuzzle object and its book keeping data in regards to the search
+	 */
 	private class Node{
 		
 		public EightPuzzle puzzle;
 		public Node parent;
-		public int lastMove = 0;
 		public int score = 0;
 		
 		public Node(EightPuzzle puzzle, Node parent){
@@ -27,19 +31,27 @@ public class Search{
 		
 	}
 	
+	/*
+	 * Clears puzzlePermutations and then calls
+	 * loadPuzzlePermutation with a layout to start its
+	 * recursive activity with
+	 */
 	private void reloadPermutations(){
 		
 		this.puzzlePermutations.clear();
 		
-		int[] defaultConfig = {1, 2, 3, 4, 5, 6, 7, 8, 0};
+		int[] startConfigArr = {1, 2, 3, 4, 5, 6, 7, 8, 0};
 		
 		List<Integer> startConfig = new ArrayList<Integer>();
-		for(int i = 0; i < defaultConfig.length; ++i)
-			startConfig.add(defaultConfig[i]);
+		for(int i = 0; i < startConfigArr.length; ++i)
+			startConfig.add(startConfigArr[i]);
 		
 		loadPuzzlePermutations(startConfig, 0);
 	}
 	
+	/*
+	 * recursively loads into puzzlePermutations all 9! possible unique EightPuzzle configurations
+	 */
 	private void loadPuzzlePermutations(List<Integer> lst, int k){
 		
 		for(int i = k; i < lst.size(); ++i){
@@ -59,6 +71,9 @@ public class Search{
 		
 	}
 	
+	/*
+	 * Displays discovered winning move path from start to finish
+	 */
 	private void displayWinMoves(Node winPuzzle, int numExpand){
 		Stack<Node> WinningMoves = new Stack<Node>();
 		Node winMove = winPuzzle;
@@ -82,8 +97,15 @@ public class Search{
 	}
 	
 	public Search(){
+		// constructor
 	}
 	
+	
+	/*
+	 * Executes a breadth first search for a puzzle solution stating from argument puzzle
+	 * breaks the loop and calls displayWinMoves on success
+	 * prints "Unsolvable" when a solution cannot be found
+	 */
 	public void breadthFirst(EightPuzzle puzzle){
 		
 		reloadPermutations();
@@ -116,7 +138,6 @@ public class Search{
 					puzzleChild.puzzle.move(childMove);
 					
 					if(this.puzzlePermutations.contains(puzzleChild.puzzle)){
-						puzzleChild.lastMove = childMove;
 						puzzleChild.score = currentPuzzle.score + childMove;
 						
 						moveQueue.add(puzzleChild);
@@ -130,6 +151,11 @@ public class Search{
 		System.out.println("Unsolvable");
 	}
 	
+	/*
+	 * Executes a depth first search for a puzzle solution stating from argument puzzle
+	 * breaks the loop and calls displayWinMoves on success
+	 * prints "Unsolvable" when a solution cannot be found
+	 */
 	public void depthFirst(EightPuzzle puzzle){
 		
 		reloadPermutations();
@@ -162,7 +188,6 @@ public class Search{
 					puzzleChild.puzzle.move(childMove);
 					
 					if(this.puzzlePermutations.contains(puzzleChild.puzzle)){
-						puzzleChild.lastMove = childMove;
 						puzzleChild.score = currentPuzzle.score + childMove;
 						moveStack.push(puzzleChild);
 						this.puzzlePermutations.remove(puzzleChild.puzzle);
@@ -176,6 +201,11 @@ public class Search{
 		
 	}
 	
+	/*
+	 * Executes a uniform-cost search for a puzzle solution stating from argument puzzle
+	 * breaks the loop and calls displayWinMoves on success
+	 * prints "Unsolvable" when a solution cannot be found
+	 */
 	public void uniformCost(EightPuzzle puzzle){
 		
 		reloadPermutations();
@@ -214,7 +244,6 @@ public class Search{
 					puzzleChild.puzzle.move(childMove);
 					
 					if(this.puzzlePermutations.contains(puzzleChild.puzzle)){
-						puzzleChild.lastMove = childMove;
 						puzzleChild.score = currentPuzzle.score + childMove;
 						moveQueue.add(puzzleChild);
 						this.puzzlePermutations.remove(puzzleChild.puzzle);
@@ -227,6 +256,12 @@ public class Search{
 		System.out.println("Unsolvable");
 	}
 	
+	/*
+	 * Executes a "greedy" breadth first search for a puzzle solution stating from argument puzzle
+	 * uses the number of misplaced tiles in an EightPuzzle configuration as its heuristic
+	 * breaks the loop and calls displayWinMoves on success
+	 * prints "Unsolvable" when a solution cannot be found
+	 */
 	public void bestFirst(EightPuzzle puzzle){
 		
 		reloadPermutations();
@@ -267,7 +302,6 @@ public class Search{
 					puzzleChild.puzzle.move(childMove);
 					
 					if(this.puzzlePermutations.contains(puzzleChild.puzzle)){
-						puzzleChild.lastMove = childMove;
 						puzzleChild.score = currentPuzzle.score + childMove;
 						moveQueue.add(puzzleChild);
 						this.puzzlePermutations.remove(puzzleChild.puzzle);
@@ -280,6 +314,13 @@ public class Search{
 		System.out.println("Unsolvable");
 	}
 	
+	/*
+	 * Executes an A* search for a puzzle solution stating from argument puzzle
+	 * uses the cumulative value of the face values of previously moved tiles as its path cost
+	 * uses the number of misplaced tiles in an EightPuzzle configuration as is heuristic
+	 * breaks the loop and calls displayWinMoves on success
+	 * prints "Unsolvable" when a solution cannot be found
+	 */
 	public void A1(EightPuzzle puzzle){
 		
 		reloadPermutations();
@@ -320,7 +361,6 @@ public class Search{
 					puzzleChild.puzzle.move(childMove);
 					
 					if(this.puzzlePermutations.contains(puzzleChild.puzzle)){
-						puzzleChild.lastMove = childMove;
 						puzzleChild.score = currentPuzzle.score + childMove;
 						moveQueue.add(puzzleChild);
 						this.puzzlePermutations.remove(puzzleChild.puzzle);
@@ -333,6 +373,13 @@ public class Search{
 		System.out.println("Unsolvable");
 	}
 	
+	/*
+	 * Executes an A* search for a puzzle solution stating from argument puzzle
+	 * uses the cumulative value of the face values of previously moved tiles as its path cost
+	 * uses the cumulative Manhattan Distances from every tile in a given configuration as its heuristic
+	 * breaks the loop and calls displayWinMoves on success
+	 * prints "Unsolvable" when a solution cannot be found
+	 */
 	public void A2(EightPuzzle puzzle){
 		
 		reloadPermutations();
@@ -381,7 +428,6 @@ public class Search{
 					puzzleChild.puzzle.move(childMove);
 					
 					if(this.puzzlePermutations.contains(puzzleChild.puzzle)){
-						puzzleChild.lastMove = childMove;
 						puzzleChild.score = currentPuzzle.score + childMove;
 						moveQueue.add(puzzleChild);
 						this.puzzlePermutations.remove(puzzleChild.puzzle);
