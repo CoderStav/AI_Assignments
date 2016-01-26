@@ -9,18 +9,25 @@ public class EightPuzzle extends Object{
 	private int[] configuration = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 	private int emptySpace;
 	
-	public EightPuzzle(int[] startingConfig) throws InvalidConfigurationException{
+	/*
+	 * EightPuzzle object
+	 * holds the int[9] array that contains the configuration
+	 * has methods used to modify the configuration and check
+	 * the status of both the puzzle as a whole and its 
+	 * individual tiles.
+	 */
+	public EightPuzzle(int[] startingConfig){
 		
 		if(startingConfig.length != 9) 
-			throw new InvalidConfigurationException("configuration does not contain exactly 8 elements");
+			throw new IllegalArgumentException("configuration does not contain exactly 8 elements");
 		
 		for(int i = 0; i < 9; ++i){
 			if(startingConfig[i] > 8 || startingConfig[i] < 0)
-				throw new InvalidConfigurationException("configuration has element with value not between 0 and 8");
+				throw new IllegalArgumentException("configuration has element with value not between 0 and 8");
 			
 			for(int j = i+1; j < 9; ++j)
 				if(startingConfig[i] == startingConfig[j])
-					throw new InvalidConfigurationException("configuration has duplicate elements");
+					throw new IllegalArgumentException("configuration has duplicate elements");
 			
 			if(startingConfig[i] == 0)
 				this.emptySpace = i;
@@ -30,13 +37,31 @@ public class EightPuzzle extends Object{
 		this.configuration = startingConfig;
 	}
 	
-	// copy constructor
+	/*
+	 * Copy Constructor
+	 */
 	public EightPuzzle(EightPuzzle c){
 		System.arraycopy(c.configuration, 0, this.configuration, 0, c.configuration.length);
 		this.emptySpace = c.emptySpace;
 	}
 	
+	@Override
+	public int hashCode(){	
+	    return Arrays.hashCode(this.configuration);
+	}
+	
+	@Override
+	public boolean equals(final Object puzzle){
+		return Arrays.equals(this.configuration, ((EightPuzzle) puzzle).configuration);
+	}
+	
+	/*
+	 * Determines if two given tiles are in the same row
+	 * used internally
+	 */
 	private boolean sameRow(int x, int y){
+		
+		if((x < 0 || x > 8) || (y < 0 || y > 8)) return false;
 		
 		int k = 0;
 		boolean xfound, yfound;
@@ -57,6 +82,10 @@ public class EightPuzzle extends Object{
 		return false;
 	}
 	
+	/*
+	 * Determines the current position of a given tile
+	 * used internally
+	 */
 	private int tilePosition(int tile){
 		for(int i = 0; i < this.configuration.length; ++i)
 			if(this.configuration[i] == tile)
@@ -65,6 +94,11 @@ public class EightPuzzle extends Object{
 		return -1;
 	}
 	
+	/*
+	 * Determines the "correct" position of a given tile
+	 * according to winConfiguration
+	 * used internally
+	 */
 	private int correctTilePosition(int tile){
 		for(int i = 0; i < this.winConfiguration.length; ++i)
 			if(this.winConfiguration[i] == tile)
@@ -73,34 +107,48 @@ public class EightPuzzle extends Object{
 		return -1;
 	}
 	
-	@Override
-	public int hashCode(){	
-	    return Arrays.hashCode(this.configuration);
-	}
-	
-	@Override
-	public boolean equals(final Object puzzle){
-		return Arrays.equals(this.configuration, ((EightPuzzle) puzzle).configuration);
-	}
-	
+	/*
+	 * Determines if the puzzle's configuration is solved
+	 * by cross referencing it with winConfiguration
+	 */
 	public boolean isSolved(){
 		return Arrays.equals(this.configuration, this.winConfiguration);
 	}
 	
-	public void move(int piece){
-		// error handle this later
+	/*
+	 * Moves tile with specified face value
+	 */
+	public void move(int tile){
+		
+		if(tile < 1 || tile > 8)
+			throw new IllegalArgumentException("Invalid tile");
+		
+		int[] movablePieces = possibleMoves();
+		boolean pieceCanMove = false;
+		for(int i = 0; i < movablePieces.length; ++i)
+			if(movablePieces[i] == tile)
+				pieceCanMove = true;
+		
+		if(!pieceCanMove)
+			throw new IllegalArgumentException("Piece cannot be moved");
+		
 		int piecePosition = 0;
 		for(int i = 0; i < 9; ++i)
-			if(this.configuration[i] == piece)
+			if(this.configuration[i] == tile)
 				piecePosition = i;
 		
-		this.configuration[this.emptySpace] = piece;
+		this.configuration[this.emptySpace] = tile;
 		this.configuration[piecePosition] = 0;
 		
 		this.emptySpace = piecePosition;
 		
 	}
 	
+	/*
+	 * Return a int[4] array where values that are
+	 * greater than zero are the face values of pieces that
+	 * can be moved.
+	 */
 	public int[] possibleMoves(){
 		
 		int[] validmoves = new int[4];
@@ -127,7 +175,13 @@ public class EightPuzzle extends Object{
 		
 	}
 	
+	/*
+	 * Returns the Manhattan Distance of the tile with the given face value
+	 */
 	public int manhattanDistance(int tile){
+		
+		if(tile < 0 || tile > 8)
+			throw new IllegalArgumentException("Invalid tile");
 		
 		if(tile > 0 || tile < 8) return -1;
 		
@@ -158,6 +212,11 @@ public class EightPuzzle extends Object{
 		return i;
 	}
 	
+	/*
+	 * Returns the amount of tiles in the puzzle's configuration
+	 * that aren't in their correct spots according to
+	 * winConfiguration
+	 */
 	public int misplacedTiles(){
 		int misplaced = 0;
 		for(int i = 0; i < this.configuration.length; ++i)
@@ -167,6 +226,10 @@ public class EightPuzzle extends Object{
 		return misplaced;
 	}
 	
+	/*
+	 * Prints the puzzle's current configuration
+	 * in a 3 by 3 grid
+	 */
 	public void display(){
 		for(int i = 0; i < 9; ++i){
 			if(i % 3 == 0) System.out.print("\n");

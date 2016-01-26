@@ -9,13 +9,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.HashSet;
 
+
 public class Search{
 	
 	private HashSet<EightPuzzle> puzzlePermutations = new HashSet<EightPuzzle>();
 	
 	
 	/*
-	 * Private Node subclass.
+	 * Node
+	 * Subclass
 	 * Holds EightPuzzle object and its book keeping data in regards to the search
 	 */
 	private class Node{
@@ -50,7 +52,7 @@ public class Search{
 	}
 	
 	/*
-	 * recursively loads into puzzlePermutations all 9! possible unique EightPuzzle configurations
+	 * Recursively loads into puzzlePermutations all 9! possible unique EightPuzzle configurations
 	 */
 	private void loadPuzzlePermutations(List<Integer> lst, int k){
 		
@@ -64,9 +66,7 @@ public class Search{
 			int[] perm = new int[lst.size()];
 			for(int i = 0; i < perm.length; ++i)
 				perm[i] = lst.get(i);
-			try {
-				this.puzzlePermutations.add(new EightPuzzle(perm));
-			} catch (InvalidConfigurationException e) {}
+			this.puzzlePermutations.add(new EightPuzzle(perm));
 		}
 		
 	}
@@ -96,6 +96,11 @@ public class Search{
 			
 	}
 	
+	/*
+	 * Search
+	 * Contains methods used to search EightPuzzle for a solution from any given
+	 * EightPuzzle object with a configuration that is both valid and solvable.
+	 */
 	public Search(){
 		// constructor
 	}
@@ -203,6 +208,7 @@ public class Search{
 	
 	/*
 	 * Executes a uniform-cost search for a puzzle solution stating from argument puzzle
+	 * uses the cumulative value of the face values of previously moved to determine path cost
 	 * breaks the loop and calls displayWinMoves on success
 	 * prints "Unsolvable" when a solution cannot be found
 	 */
@@ -215,6 +221,11 @@ public class Search{
 		int childMove;
 		
 		PriorityQueue<Node> moveQueue = new PriorityQueue<Node>(10, new Comparator<Node>(){
+			/*
+			 * This compare implementation allows moveQueue to order is Node contents by 
+			 * cumulative score, allowing uniform cost to expand the cheapest
+			 * puzzle configuration available to it
+			 */
 			public int compare(Node n1, Node n2){
 				return n1.score - n2.score;
 			}
@@ -271,7 +282,12 @@ public class Search{
 		int childMove;
 		
 		PriorityQueue<Node> moveQueue = new PriorityQueue<Node>(10, new Comparator<Node>(){
-			
+			/*
+			 * This compare implementation allows moveQueue to order is Node contents by 
+			 * number of misplaced tiles (via EightPuzzle's misplaced tiles method).
+			 * allowing bestFirst to expand the puzzle available to it with the 
+			 * least misplaced tiles first.
+			 */
 			public int compare(Node n1, Node n2){
 				return n1.puzzle.misplacedTiles() - n2.puzzle.misplacedTiles();
 			}
@@ -330,7 +346,12 @@ public class Search{
 		int childMove;
 		
 		PriorityQueue<Node> moveQueue = new PriorityQueue<Node>(10, new Comparator<Node>(){
-			
+			/*
+			 * This compare implementation allows moveQueue to order is Node contents by 
+			 * f(n) = g(n)[cumulative moved tile face value sum] + h(n)[number of misplaced tiles].
+			 * allowing A* to expand the puzzle available to it with the least cost
+			 * according to f(n) first.
+			 */
 			public int compare(Node n1, Node n2){
 				return (n1.puzzle.misplacedTiles() + n1.score) - (n2.puzzle.misplacedTiles() + n2.score);
 			}
@@ -389,7 +410,12 @@ public class Search{
 		int childMove;
 		
 		PriorityQueue<Node> moveQueue = new PriorityQueue<Node>(10, new Comparator<Node>(){
-			
+			/*
+			 * This compare implementation allows moveQueue to order is Node contents by 
+			 * f(n) = g(n)[cumulative moved tile face value sum] + h(n)[Manhattan Distance sum of all tile in a given configuration].
+			 * allowing A* to expand the puzzle available to it with the least cost
+			 * according to f(n) first.
+			 */
 			public int compare(Node n1, Node n2){
 				
 				int n1ManhattanSum, n2ManhattanSum;

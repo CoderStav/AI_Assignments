@@ -24,26 +24,29 @@ public class Main {
 		
 		EightPuzzle easy, med, hard, custom;
 		
-		try {
-			easy = new EightPuzzle(easyConfig);
-			med = new EightPuzzle(medConfig);
-			hard = new EightPuzzle(hardConfig);
-			custom = new EightPuzzle(customConfig);
-		} catch (InvalidConfigurationException e) {
-			e.printStackTrace();
-			return;
-		}
+		easy = new EightPuzzle(easyConfig);
+		med = new EightPuzzle(medConfig);
+		hard = new EightPuzzle(hardConfig);
+		custom = new EightPuzzle(customConfig);
 		
 		Search theSearch = new Search();
 		
-		/* GUI elements */
+		/* ~~~ GUI Initialization ~~~ */
 		
+		
+		// guiFrame and globalPanel initialization
 		JFrame guiFrame = new JFrame("EightPuzzleSolver");
 		guiFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		
+		Container guiContent = guiFrame.getContentPane();
+		Dimension frameDimensions = new Dimension(500, 500);
+		guiContent.setPreferredSize(frameDimensions);
 		
 		JPanel globalPanel = new JPanel();
 		globalPanel.setLayout(new BoxLayout(globalPanel, BoxLayout.Y_AXIS));
 		
+		
+		// search type radio buttons initialization
 		JPanel searchType = new JPanel();
 		ButtonGroup searches = new ButtonGroup();
 		
@@ -66,6 +69,8 @@ public class Main {
 		searchType.add(A1Search);
 		searchType.add(A2Search);
 		
+		
+		// difficulty buttons initialization
 		Dimension diffBtnSize = new Dimension(90, 25);
 		
 		JPanel topBar = new JPanel();
@@ -75,23 +80,29 @@ public class Main {
 		testButtonPanel.setLayout(new BoxLayout(testButtonPanel, BoxLayout.X_AXIS));
 		topBar.add(testButtonPanel);
 		
+		
+		// output JTextArea w/containing JPanel and JScrollPane initialization
 		JPanel outputPanel = new JPanel();
 		
 		JTextArea outputTextArea = new JTextArea(25, 40);
 		Font outputFont = new Font("Courier", Font.PLAIN, 12);
 		outputTextArea.setFont(outputFont);
 		
+		JScrollPane outputScroll = new JScrollPane(outputTextArea);
+		outputPanel.add(outputScroll);
+		
+		// console output redirection to GUIOutputStream pointed at outputTextArea
 		PrintStream printStream = new PrintStream(new GUIOutputStream(outputTextArea));
 		System.setOut(printStream);
 		System.setErr(printStream);
 		
-		JScrollPane outputScroll = new JScrollPane(outputTextArea);
-		outputPanel.add(outputScroll);
 		
-		Container guiContent = guiFrame.getContentPane();
-		Dimension frameDimensions = new Dimension(500, 500);
-		guiContent.setPreferredSize(frameDimensions);
-		
+		/*
+		 *  runSearch
+		 *  lambda called by difficultyButtons' ActionEvents
+		 *  calls the search method of the selected radio button
+		 *  on given EightPuzzle argument puzz
+		 */
 		Consumer<EightPuzzle> runSearch = (EightPuzzle puzz) -> {
 			if(breadthFirstSearchBtn.isSelected())
 				theSearch.breadthFirst(puzz);
@@ -109,10 +120,16 @@ public class Main {
 				System.out.println("Not implemeneted");
 		};
 		
+		
+		// Difficulty Button initialization
 		JButton runEasy = new JButton("Easy");
 		runEasy.setMaximumSize(diffBtnSize);
 		runEasy.addActionListener(new ActionListener(){
-
+			
+			/*
+			 * Difficulty button ActionListeners call runSearch lambda
+			 * with predefined puzzle of relevant difficulty
+			 */
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				runSearch.accept(easy);
@@ -153,6 +170,8 @@ public class Main {
 			
 		});
 		
+		
+		// inserting elements into their respective panels
 		globalPanel.add(searchType);
 		globalPanel.add(topBar);
 		globalPanel.add(outputPanel);
