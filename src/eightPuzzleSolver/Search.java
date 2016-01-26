@@ -24,10 +24,10 @@ public class Search{
 		
 		public EightPuzzle puzzle;
 		public Node parent;
-		public int score = 0;
+		
+		public int cost = 0; // sum of all previously moved tiles
 		public int movedTile = 0; // last moved tile
-		public int direction = -1; // movement made to get to the current configuration. 
-		// 0 - right, 1 - down, 2 - left, 3 - up, -1 - none
+		public String direction = null;
 		
 		public Node(EightPuzzle puzzle, Node parent){
 			this.puzzle = new EightPuzzle(puzzle);
@@ -77,7 +77,7 @@ public class Search{
 	/*
 	 * Displays discovered winning move path from start to finish
 	 */
-	private void displayWinMoves(Node winPuzzle, int numExpand){
+	private void displayWinMoves(Node winPuzzle, int numExpand, int queueMax){
 		Stack<Node> WinningMoves = new Stack<Node>();
 		Node winMove = winPuzzle;
 		
@@ -88,22 +88,73 @@ public class Search{
 			winMove = winMove.parent;
 		}
 		
+		int solutionLength = WinningMoves.size();
 		while(!WinningMoves.isEmpty()){
 			winMove = WinningMoves.pop();
 			winMove.puzzle.display();
 			
-			String[] directions = {"right\n", "down\n", "left\n", "up\n"};
 			
-			if(winMove.movedTile != 0 && winMove.direction != -1)
-				System.out.printf("%d %s", winMove.movedTile, directions[winMove.direction]);
-			System.out.printf("Score: %d\n", winMove.score);
+			
+			if(winMove.movedTile != 0 && winMove.direction != null)
+				System.out.printf("%d %s", winMove.movedTile, winMove.direction);
+			System.out.printf("Cost: %d\n", winMove.cost);
 		}
 		
 		System.out.println();
 		System.out.println("~~ Search Metrics ~~");
-		System.out.printf("Solution Score: %d\n", winPuzzle.score);
+		System.out.printf("Solution Length: %d\n", solutionLength);
+		System.out.printf("Solution Cost: %d\n", winPuzzle.cost);
 		System.out.printf("Nodes Expanded: %d\n", numExpand);
+		System.out.printf("Maximum queue/stack size: %d\n", queueMax);
 			
+	}
+	
+	/*
+	 * successor function
+	 * used for pushing children of an expanded puzzle onto their respective data structure
+	 * accounts for different dataStructures with moveStructure and structureType
+	 */
+	@SuppressWarnings("unchecked")
+	private void successor(Object moveStructure, String structureType, Node currentPuzzle, int childMove, int direction){
+		Queue<Node> moveQueue = null;
+		PriorityQueue<Node> movePriorityQueue = null;
+		Stack<Node> moveStack = null;
+		
+		int structType = 0; // integer value to determine data structure type. Set and used for speed and convenience.
+		if(structureType.equals("Queue")){
+			moveQueue = (Queue<Node>) moveStructure;
+			structType = 1;
+		}else if(structureType.equals("PriorityQueue")){
+			movePriorityQueue = (PriorityQueue<Node>) moveStructure;
+			structType = 2;
+		}else if(structureType.equals("Stack")){
+			moveStack = (Stack<Node>) moveStructure;
+			structType = 3;
+		}else
+			return;
+		
+		String[] directionsMap = {"right\n", "down\n", "left\n", "up\n"}; // maps to direction based on order of EightPuzzle.possibleMoves() return value array indices
+		Node puzzleChild;
+		if(childMove > 0){
+			puzzleChild = new Node(new EightPuzzle(currentPuzzle.puzzle), currentPuzzle);
+			puzzleChild.puzzle.move(childMove);
+			puzzleChild.movedTile = childMove;
+			puzzleChild.direction = directionsMap[direction];
+			
+			if(this.puzzlePermutations.contains(puzzleChild.puzzle)){
+				puzzleChild.cost = currentPuzzle.cost + childMove;
+				
+				if(structType == 1)
+					moveQueue.add(puzzleChild);
+				else if(structType == 2)
+					movePriorityQueue.add(puzzleChild);
+				else if(structType == 3)
+					moveStack.push(puzzleChild);
+				
+				this.puzzlePermutations.remove(puzzleChild.puzzle);
+			}
+		}
+		
 	}
 	
 	/*
@@ -132,36 +183,24 @@ public class Search{
 		Queue<Node> moveQueue = new LinkedList<Node>();
 		moveQueue.add(new Node(new EightPuzzle(puzzle), null));
 		
-		int statesChecked = 0;
+		int statesChecked = 0, queueMax = 0;
 		do{
 			statesChecked++;
 			
 			currentPuzzle = moveQueue.poll();
 			
 			if(currentPuzzle.puzzle.isSolved()){
-				displayWinMoves(currentPuzzle, statesChecked);
+				displayWinMoves(currentPuzzle, statesChecked, queueMax);
 				return;
 			}
 			
 			possibleMoves = currentPuzzle.puzzle.possibleMoves();
 			for(int i = 0; i < possibleMoves.length; ++i){
-				
 				childMove = possibleMoves[i];
-				
-				if(childMove > 0){
-					puzzleChild = new Node(new EightPuzzle(currentPuzzle.puzzle), currentPuzzle);
-					puzzleChild.puzzle.move(childMove);
-					puzzleChild.movedTile = childMove;
-					puzzleChild.direction = i;
-					
-					if(this.puzzlePermutations.contains(puzzleChild.puzzle)){
-						puzzleChild.score = currentPuzzle.score + childMove;
-						
-						moveQueue.add(puzzleChild);
-						this.puzzlePermutations.remove(puzzleChild.puzzle);
-					}
-				}
+				successor(moveQueue, "Queue", currentPuzzle, childMove, i);
 			}
+			
+			queueMax = (queueMax < moveQueue.size()) ? moveQueue.size() : queueMax;
 			
 		}while(!this.puzzlePermutations.isEmpty() && !moveQueue.isEmpty());
 		
@@ -184,35 +223,24 @@ public class Search{
 		Stack<Node> moveStack = new Stack<Node>();
 		moveStack.push(new Node(new EightPuzzle(puzzle), null));
 		
-		int statesChecked = 0;
+		int statesChecked = 0, stackMax = 0;
 		do{
 			++statesChecked;
 			
 			currentPuzzle = moveStack.pop();
 			
 			if(currentPuzzle.puzzle.isSolved()){
-				displayWinMoves(currentPuzzle, statesChecked);
+				displayWinMoves(currentPuzzle, statesChecked, stackMax);
 				return;
 			}
 			
 			possibleMoves = currentPuzzle.puzzle.possibleMoves();
 			for(int i = 0; i < possibleMoves.length; ++i){
-				
 				childMove = possibleMoves[i];
-				
-				if(childMove > 0){
-					puzzleChild = new Node(new EightPuzzle(currentPuzzle.puzzle), currentPuzzle);
-					puzzleChild.puzzle.move(childMove);
-					puzzleChild.movedTile = childMove;
-					puzzleChild.direction = i;
-					
-					if(this.puzzlePermutations.contains(puzzleChild.puzzle)){
-						puzzleChild.score = currentPuzzle.score + childMove;
-						moveStack.push(puzzleChild);
-						this.puzzlePermutations.remove(puzzleChild.puzzle);
-					}
-				}
+				successor(moveStack, "Stack", currentPuzzle, childMove, i);
 			}
+			
+			stackMax = (stackMax < moveStack.size()) ? moveStack.size() : stackMax;
 			
 		}while(!this.puzzlePermutations.isEmpty() && !moveStack.isEmpty());
 		
@@ -241,41 +269,30 @@ public class Search{
 			 * puzzle configuration available to it
 			 */
 			public int compare(Node n1, Node n2){
-				return n1.score - n2.score;
+				return n1.cost - n2.cost;
 			}
 		});
 		
 		moveQueue.add(new Node(new EightPuzzle(puzzle), null));
 		
-		int statesChecked = 0;
+		int statesChecked = 0, queueMax = 0;
 		do{
 			++statesChecked;
 			
 			currentPuzzle = moveQueue.poll();
 			
 			if(currentPuzzle.puzzle.isSolved()){
-				displayWinMoves(currentPuzzle, statesChecked);
+				displayWinMoves(currentPuzzle, statesChecked, queueMax);
 				return;
 			}
 			
 			possibleMoves = currentPuzzle.puzzle.possibleMoves();
 			for(int i = 0; i < possibleMoves.length; ++i){
-				
 				childMove = possibleMoves[i];
-				
-				if(childMove > 0){
-					puzzleChild = new Node(new EightPuzzle(currentPuzzle.puzzle), currentPuzzle);
-					puzzleChild.puzzle.move(childMove);
-					puzzleChild.movedTile = childMove;
-					puzzleChild.direction = i;
-					
-					if(this.puzzlePermutations.contains(puzzleChild.puzzle)){
-						puzzleChild.score = currentPuzzle.score + childMove;
-						moveQueue.add(puzzleChild);
-						this.puzzlePermutations.remove(puzzleChild.puzzle);
-					}
-				}
+				successor(moveQueue, "PriorityQueue", currentPuzzle, childMove, i);
 			}
+			
+			queueMax = (queueMax < moveQueue.size()) ? moveQueue.size() : queueMax;
 			
 		}while(!this.puzzlePermutations.isEmpty() && !moveQueue.isEmpty());
 		
@@ -311,36 +328,24 @@ public class Search{
 		
 		moveQueue.add(new Node(new EightPuzzle(puzzle), null));
 		
-		int statesChecked = 0;
+		int statesChecked = 0, queueMax = 0;
 		do{
 			++statesChecked;
 			
 			currentPuzzle = moveQueue.poll();
 				
 			if(currentPuzzle.puzzle.isSolved()){
-				displayWinMoves(currentPuzzle, statesChecked);
+				displayWinMoves(currentPuzzle, statesChecked, queueMax);
 				return;
 			}
 			
 			possibleMoves = currentPuzzle.puzzle.possibleMoves();
 			for(int i = 0; i < possibleMoves.length; ++i){
-				
 				childMove = possibleMoves[i];
-				
-				if(childMove > 0){
-					
-					puzzleChild = new Node(new EightPuzzle(currentPuzzle.puzzle), currentPuzzle);
-					puzzleChild.puzzle.move(childMove);
-					puzzleChild.movedTile = childMove;
-					puzzleChild.direction = i;
-					
-					if(this.puzzlePermutations.contains(puzzleChild.puzzle)){
-						puzzleChild.score = currentPuzzle.score + childMove;
-						moveQueue.add(puzzleChild);
-						this.puzzlePermutations.remove(puzzleChild.puzzle);
-					}
-				}
+				successor(moveQueue, "PriorityQueue", currentPuzzle, childMove, i);
 			}
+			
+			queueMax = (queueMax < moveQueue.size()) ? moveQueue.size() : queueMax;
 			
 		}while(!this.puzzlePermutations.isEmpty() && !moveQueue.isEmpty());
 		
@@ -370,43 +375,31 @@ public class Search{
 			 * according to f(n) first.
 			 */
 			public int compare(Node n1, Node n2){
-				return (n1.puzzle.misplacedTiles() + n1.score) - (n2.puzzle.misplacedTiles() + n2.score);
+				return (n1.puzzle.misplacedTiles() + n1.cost) - (n2.puzzle.misplacedTiles() + n2.cost);
 			}
 			
 		});
 		
 		moveQueue.add(new Node(new EightPuzzle(puzzle), null));
 		
-		int statesChecked = 0;
+		int statesChecked = 0, queueMax = 0;
 		do{
 			++statesChecked;
 			
 			currentPuzzle = moveQueue.poll();
 				
 			if(currentPuzzle.puzzle.isSolved()){
-				displayWinMoves(currentPuzzle, statesChecked);
+				displayWinMoves(currentPuzzle, statesChecked, queueMax);
 				return;
 			}
 			
 			possibleMoves = currentPuzzle.puzzle.possibleMoves();
 			for(int i = 0; i < possibleMoves.length; ++i){
-				
 				childMove = possibleMoves[i];
-				
-				if(childMove > 0){
-					
-					puzzleChild = new Node(new EightPuzzle(currentPuzzle.puzzle), currentPuzzle);
-					puzzleChild.puzzle.move(childMove);
-					puzzleChild.movedTile = childMove;
-					puzzleChild.direction = i;
-					
-					if(this.puzzlePermutations.contains(puzzleChild.puzzle)){
-						puzzleChild.score = currentPuzzle.score + childMove;
-						moveQueue.add(puzzleChild);
-						this.puzzlePermutations.remove(puzzleChild.puzzle);
-					}
-				}
+				successor(moveQueue, "PriorityQueue", currentPuzzle, childMove, i);
 			}
+			
+			queueMax = (queueMax < moveQueue.size()) ? moveQueue.size() : queueMax;
 			
 		}while(!this.puzzlePermutations.isEmpty() && !moveQueue.isEmpty());
 		
@@ -444,43 +437,31 @@ public class Search{
 					n2ManhattanSum += n2.puzzle.manhattanDistance(i);
 				}
 				
-				return (n1ManhattanSum + n1.score) - (n2ManhattanSum + n2.score);
+				return (n1ManhattanSum + n1.cost) - (n2ManhattanSum + n2.cost);
 			}
 			
 		});
 		
 		moveQueue.add(new Node(new EightPuzzle(puzzle), null));
 		
-		int statesChecked = 0;
+		int statesChecked = 0, queueMax = 0;
 		do{
 			++statesChecked;
 			
 			currentPuzzle = moveQueue.poll();
 				
 			if(currentPuzzle.puzzle.isSolved()){
-				displayWinMoves(currentPuzzle, statesChecked);
+				displayWinMoves(currentPuzzle, statesChecked, queueMax);
 				return;
 			}
 			
 			possibleMoves = currentPuzzle.puzzle.possibleMoves();
 			for(int i = 0; i < possibleMoves.length; ++i){
-				
 				childMove = possibleMoves[i];
-				
-				if(childMove > 0){
-					
-					puzzleChild = new Node(new EightPuzzle(currentPuzzle.puzzle), currentPuzzle);
-					puzzleChild.puzzle.move(childMove);
-					puzzleChild.movedTile = childMove;
-					puzzleChild.direction = i;
-					
-					if(this.puzzlePermutations.contains(puzzleChild.puzzle)){
-						puzzleChild.score = currentPuzzle.score + childMove;
-						moveQueue.add(puzzleChild);
-						this.puzzlePermutations.remove(puzzleChild.puzzle);
-					}
-				}
+				successor(moveQueue, "PriorityQueue", currentPuzzle, childMove, i);
 			}
+			
+			queueMax = (queueMax < moveQueue.size()) ? moveQueue.size() : queueMax;
 			
 		}while(!this.puzzlePermutations.isEmpty() && !moveQueue.isEmpty());
 		
