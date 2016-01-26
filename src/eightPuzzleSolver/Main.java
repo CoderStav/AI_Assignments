@@ -96,15 +96,15 @@ public class Main {
 			if(breadthFirstSearchBtn.isSelected())
 				theSearch.breadthFirst(puzz);
 			else if(depthFirstSearchBtn.isSelected())
-				theSearch.depthFirst(puzz, 31);
+				theSearch.depthFirst(puzz);
 			else if(uniformCostSearchBtn.isSelected())
 				theSearch.uniformCost(puzz);
 			else if(bestFirstSearchBtn.isSelected())
 				theSearch.bestFirst(puzz);
 			else if(A1Search.isSelected())
-				System.out.println("Not implemeneted");
+				theSearch.A1(puzz);
 			else if(A2Search.isSelected())
-				System.out.println("Not implemented");
+				theSearch.A2(puzz);
 			else
 				System.out.println("Not implemeneted");
 		};

@@ -158,6 +158,15 @@ public class EightPuzzle extends Object{
 		return i;
 	}
 	
+	public int misplacedTiles(){
+		int misplaced = 0;
+		for(int i = 0; i < this.configuration.length; ++i)
+			if(this.configuration[i] != this.winConfiguration[i])
+				misplaced++;
+		
+		return misplaced;
+	}
+	
 	public void display(){
 		for(int i = 0; i < 9; ++i){
 			if(i % 3 == 0) System.out.print("\n");

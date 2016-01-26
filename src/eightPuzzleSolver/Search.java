@@ -4,15 +4,20 @@ import java.util.Queue;
 import java.util.PriorityQueue;
 import java.util.Stack;
 import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.HashSet;
 
-public class Search {
+public class Search{
+	
+	private HashSet<EightPuzzle> puzzlePermutations = new HashSet<EightPuzzle>();
 	
 	private class Node{
 		
 		public EightPuzzle puzzle;
 		public Node parent;
 		public int lastMove = 0;
-		public int level = 0;
 		public int score = 0;
 		
 		public Node(EightPuzzle puzzle, Node parent){
@@ -22,7 +27,36 @@ public class Search {
 		
 	}
 	
-	public Search(){
+	private void reloadPermutations(){
+		
+		this.puzzlePermutations.clear();
+		
+		int[] defaultConfig = {1, 2, 3, 4, 5, 6, 7, 8, 0};
+		
+		List<Integer> startConfig = new ArrayList<Integer>();
+		for(int i = 0; i < defaultConfig.length; ++i)
+			startConfig.add(defaultConfig[i]);
+		
+		loadPuzzlePermutations(startConfig, 0);
+	}
+	
+	private void loadPuzzlePermutations(List<Integer> lst, int k){
+		
+		for(int i = k; i < lst.size(); ++i){
+			Collections.swap(lst, i, k);
+			loadPuzzlePermutations(lst, k+1);
+			Collections.swap(lst, k, i);
+		}
+		
+		if(k == lst.size()-1){
+			int[] perm = new int[lst.size()];
+			for(int i = 0; i < perm.length; ++i)
+				perm[i] = lst.get(i);
+			try {
+				this.puzzlePermutations.add(new EightPuzzle(perm));
+			} catch (InvalidConfigurationException e) {}
+		}
+		
 	}
 	
 	private void displayWinMoves(Node winPuzzle, int numExpand){
@@ -43,11 +77,16 @@ public class Search {
 		System.out.println();
 		System.out.println("~~ Search Metrics ~~");
 		System.out.printf("Solution Score: %d\n", winPuzzle.score);
-		System.out.printf("Nodes Expanded: %d", numExpand);
+		System.out.printf("Nodes Expanded: %d\n", numExpand);
 			
 	}
 	
+	public Search(){
+	}
+	
 	public void breadthFirst(EightPuzzle puzzle){
+		
+		reloadPermutations();
 		
 		Node currentPuzzle, puzzleChild;
 		int[] possibleMoves;
@@ -58,8 +97,7 @@ public class Search {
 		
 		int statesChecked = 0;
 		do{
-			if(++statesChecked % 1000000 == 0)
-				System.out.println(statesChecked);
+			statesChecked++;
 			
 			currentPuzzle = moveQueue.remove();
 			
@@ -69,29 +107,32 @@ public class Search {
 			}
 			
 			possibleMoves = currentPuzzle.puzzle.possibleMoves();
-			
 			for(int i = 0; i < possibleMoves.length; ++i){
 				
 				childMove = possibleMoves[i];
 				
-				if(childMove > 0 && childMove != currentPuzzle.lastMove){
+				if(childMove > 0){
 					puzzleChild = new Node(new EightPuzzle(currentPuzzle.puzzle), currentPuzzle);
-					
 					puzzleChild.puzzle.move(childMove);
-					puzzleChild.lastMove = childMove;
 					
-					// TODO figure out how to record level for BFS
-					
-					puzzleChild.score = currentPuzzle.score + childMove;
-					
-					moveQueue.add(puzzleChild);
+					if(this.puzzlePermutations.contains(puzzleChild.puzzle)){
+						puzzleChild.lastMove = childMove;
+						puzzleChild.score = currentPuzzle.score + childMove;
+						
+						moveQueue.add(puzzleChild);
+						this.puzzlePermutations.remove(puzzleChild.puzzle);
+					}
 				}
 			}
 			
-		}while(!moveQueue.isEmpty());
+		}while(!this.puzzlePermutations.isEmpty() && !moveQueue.isEmpty());
+		
+		System.out.println("Unsolvable");
 	}
 	
-	public void depthFirst(EightPuzzle puzzle, int maxDepth){
+	public void depthFirst(EightPuzzle puzzle){
+		
+		reloadPermutations();
 		
 		Node currentPuzzle, puzzleChild;
 		int[] possibleMoves;
@@ -102,8 +143,7 @@ public class Search {
 		
 		int statesChecked = 0;
 		do{
-			if(++statesChecked % 1000000 == 0)
-				System.out.println(statesChecked);
+			++statesChecked;
 			
 			currentPuzzle = moveStack.pop();
 			
@@ -113,30 +153,33 @@ public class Search {
 			}
 			
 			possibleMoves = currentPuzzle.puzzle.possibleMoves();
-			
-			if(currentPuzzle.level < maxDepth){
-				for(int i = 0; i < possibleMoves.length; ++i){
+			for(int i = 0; i < possibleMoves.length; ++i){
+				
+				childMove = possibleMoves[i];
+				
+				if(childMove > 0){
+					puzzleChild = new Node(new EightPuzzle(currentPuzzle.puzzle), currentPuzzle);
+					puzzleChild.puzzle.move(childMove);
 					
-					childMove = possibleMoves[i];
-					
-					if(childMove > 0 && childMove != currentPuzzle.lastMove){
-						puzzleChild = new Node(new EightPuzzle(currentPuzzle.puzzle), currentPuzzle);
-						
-						puzzleChild.puzzle.move(childMove);
+					if(this.puzzlePermutations.contains(puzzleChild.puzzle)){
 						puzzleChild.lastMove = childMove;
-						puzzleChild.level = currentPuzzle.level + 1;
 						puzzleChild.score = currentPuzzle.score + childMove;
-						
 						moveStack.push(puzzleChild);
+						this.puzzlePermutations.remove(puzzleChild.puzzle);
 					}
 				}
 			}
 			
-		}while(!moveStack.isEmpty());
+		}while(!this.puzzlePermutations.isEmpty() && !moveStack.isEmpty());
+		
+		System.out.println("Unsolvable");
 		
 	}
 	
 	public void uniformCost(EightPuzzle puzzle){
+		
+		reloadPermutations();
+		
 		Node currentPuzzle, puzzleChild;
 		int[] possibleMoves;
 		int childMove;
@@ -151,8 +194,7 @@ public class Search {
 		
 		int statesChecked = 0;
 		do{
-			if(++statesChecked % 1000000 == 0)
-				System.out.println(statesChecked);
+			++statesChecked;
 			
 			currentPuzzle = moveQueue.poll();
 			
@@ -167,24 +209,27 @@ public class Search {
 				
 				childMove = possibleMoves[i];
 				
-				if(childMove > 0 && childMove != currentPuzzle.lastMove){
+				if(childMove > 0){
 					puzzleChild = new Node(new EightPuzzle(currentPuzzle.puzzle), currentPuzzle);
-					
 					puzzleChild.puzzle.move(childMove);
-					puzzleChild.lastMove = childMove;
 					
-					// TODO figure out how to record level for UCS
-					
-					puzzleChild.score = currentPuzzle.score + childMove;
-					
-					moveQueue.add(puzzleChild);
+					if(this.puzzlePermutations.contains(puzzleChild.puzzle)){
+						puzzleChild.lastMove = childMove;
+						puzzleChild.score = currentPuzzle.score + childMove;
+						moveQueue.add(puzzleChild);
+						this.puzzlePermutations.remove(puzzleChild.puzzle);
+					}
 				}
 			}
 			
-		}while(!moveQueue.isEmpty());
+		}while(!this.puzzlePermutations.isEmpty() && !moveQueue.isEmpty());
+		
+		System.out.println("Unsolvable");
 	}
 	
 	public void bestFirst(EightPuzzle puzzle){
+		
+		reloadPermutations();
 		
 		Node currentPuzzle, puzzleChild;
 		int[] possibleMoves;
@@ -193,7 +238,7 @@ public class Search {
 		PriorityQueue<Node> moveQueue = new PriorityQueue<Node>(10, new Comparator<Node>(){
 			
 			public int compare(Node n1, Node n2){
-				return n1.lastMove - n2.lastMove;
+				return n1.puzzle.misplacedTiles() - n2.puzzle.misplacedTiles();
 			}
 			
 		});
@@ -202,45 +247,151 @@ public class Search {
 		
 		int statesChecked = 0;
 		do{
-			if(++statesChecked % 1000000 == 0)
-				System.out.println(statesChecked);
+			++statesChecked;
 			
 			currentPuzzle = moveQueue.poll();
-			
+				
 			if(currentPuzzle.puzzle.isSolved()){
 				displayWinMoves(currentPuzzle, statesChecked);
 				return;
 			}
 			
 			possibleMoves = currentPuzzle.puzzle.possibleMoves();
-			
 			for(int i = 0; i < possibleMoves.length; ++i){
 				
 				childMove = possibleMoves[i];
 				
-				if(childMove > 0 && childMove != currentPuzzle.lastMove){
+				if(childMove > 0){
+					
 					puzzleChild = new Node(new EightPuzzle(currentPuzzle.puzzle), currentPuzzle);
-					
 					puzzleChild.puzzle.move(childMove);
-					puzzleChild.lastMove = childMove;
 					
-					// TODO figure out how to record level for GBFS
-					
-					puzzleChild.score = currentPuzzle.score + childMove;
-					
-					moveQueue.add(puzzleChild);
+					if(this.puzzlePermutations.contains(puzzleChild.puzzle)){
+						puzzleChild.lastMove = childMove;
+						puzzleChild.score = currentPuzzle.score + childMove;
+						moveQueue.add(puzzleChild);
+						this.puzzlePermutations.remove(puzzleChild.puzzle);
+					}
 				}
 			}
 			
-		}while(!moveQueue.isEmpty());
+		}while(!this.puzzlePermutations.isEmpty() && !moveQueue.isEmpty());
+		
+		System.out.println("Unsolvable");
 	}
 	
-	public void A1(){
-		// TODO
+	public void A1(EightPuzzle puzzle){
+		
+		reloadPermutations();
+		
+		Node currentPuzzle, puzzleChild;
+		int[] possibleMoves;
+		int childMove;
+		
+		PriorityQueue<Node> moveQueue = new PriorityQueue<Node>(10, new Comparator<Node>(){
+			
+			public int compare(Node n1, Node n2){
+				return (n1.puzzle.misplacedTiles() + n1.score) - (n2.puzzle.misplacedTiles() + n2.score);
+			}
+			
+		});
+		
+		moveQueue.add(new Node(new EightPuzzle(puzzle), null));
+		
+		int statesChecked = 0;
+		do{
+			++statesChecked;
+			
+			currentPuzzle = moveQueue.poll();
+				
+			if(currentPuzzle.puzzle.isSolved()){
+				displayWinMoves(currentPuzzle, statesChecked);
+				return;
+			}
+			
+			possibleMoves = currentPuzzle.puzzle.possibleMoves();
+			for(int i = 0; i < possibleMoves.length; ++i){
+				
+				childMove = possibleMoves[i];
+				
+				if(childMove > 0){
+					
+					puzzleChild = new Node(new EightPuzzle(currentPuzzle.puzzle), currentPuzzle);
+					puzzleChild.puzzle.move(childMove);
+					
+					if(this.puzzlePermutations.contains(puzzleChild.puzzle)){
+						puzzleChild.lastMove = childMove;
+						puzzleChild.score = currentPuzzle.score + childMove;
+						moveQueue.add(puzzleChild);
+						this.puzzlePermutations.remove(puzzleChild.puzzle);
+					}
+				}
+			}
+			
+		}while(!this.puzzlePermutations.isEmpty() && !moveQueue.isEmpty());
+		
+		System.out.println("Unsolvable");
 	}
 	
-	public void A2(){
-		// TODO
+	public void A2(EightPuzzle puzzle){
+		
+		reloadPermutations();
+		
+		Node currentPuzzle, puzzleChild;
+		int[] possibleMoves;
+		int childMove;
+		
+		PriorityQueue<Node> moveQueue = new PriorityQueue<Node>(10, new Comparator<Node>(){
+			
+			public int compare(Node n1, Node n2){
+				
+				int n1ManhattanSum, n2ManhattanSum;
+				n1ManhattanSum = n2ManhattanSum = 0;
+				for(int i = 1; i < 9; ++i){
+					n1ManhattanSum += n1.puzzle.manhattanDistance(i);
+					n2ManhattanSum += n2.puzzle.manhattanDistance(i);
+				}
+				
+				return (n1ManhattanSum + n1.score) - (n2ManhattanSum + n2.score);
+			}
+			
+		});
+		
+		moveQueue.add(new Node(new EightPuzzle(puzzle), null));
+		
+		int statesChecked = 0;
+		do{
+			++statesChecked;
+			
+			currentPuzzle = moveQueue.poll();
+				
+			if(currentPuzzle.puzzle.isSolved()){
+				displayWinMoves(currentPuzzle, statesChecked);
+				return;
+			}
+			
+			possibleMoves = currentPuzzle.puzzle.possibleMoves();
+			for(int i = 0; i < possibleMoves.length; ++i){
+				
+				childMove = possibleMoves[i];
+				
+				if(childMove > 0){
+					
+					puzzleChild = new Node(new EightPuzzle(currentPuzzle.puzzle), currentPuzzle);
+					puzzleChild.puzzle.move(childMove);
+					
+					if(this.puzzlePermutations.contains(puzzleChild.puzzle)){
+						puzzleChild.lastMove = childMove;
+						puzzleChild.score = currentPuzzle.score + childMove;
+						moveQueue.add(puzzleChild);
+						this.puzzlePermutations.remove(puzzleChild.puzzle);
+					}
+				}
+			}
+			
+		}while(!this.puzzlePermutations.isEmpty() && !moveQueue.isEmpty());
+		
+		System.out.println("Unsolvable");
 	}
 	
 }
