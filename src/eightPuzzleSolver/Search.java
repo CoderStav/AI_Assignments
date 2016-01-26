@@ -88,6 +88,7 @@ public class Search{
 			winMove = winMove.parent;
 		}
 		
+		int depth = 0;
 		while(!WinningMoves.isEmpty()){
 			winMove = WinningMoves.pop();
 			winMove.puzzle.display();
@@ -97,10 +98,15 @@ public class Search{
 			if(winMove.movedTile != 0 && winMove.direction != -1)
 				System.out.printf("%d %s", winMove.movedTile, directions[winMove.direction]);
 			System.out.printf("Score: %d\n", winMove.score);
+			System.out.printf("Depth: %d\n", depth);
+			depth++;
 		}
+		depth--;
+		
 		System.out.println();
 		System.out.println("~~ Search Metrics ~~");
 		System.out.printf("Solution Score: %d\n", winPuzzle.score);
+		System.out.printf("Depth: %d\n", depth);
 		System.out.printf("Nodes Expanded: %d\n", numExpand);
 			
 	}
