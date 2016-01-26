@@ -20,14 +20,11 @@ public class Main {
 		int[] medConfig = {2, 8, 1, 0, 4, 3, 7, 6, 5};
 		int[] hardConfig = {5, 6, 7, 4, 0, 8, 3, 2, 1};
 		
-		int[] customConfig = {5, 4, 0, 6, 1, 8, 7, 3, 2};
-		
 		EightPuzzle easy, med, hard, custom;
 		
 		easy = new EightPuzzle(easyConfig);
 		med = new EightPuzzle(medConfig);
 		hard = new EightPuzzle(hardConfig);
-		custom = new EightPuzzle(customConfig);
 		
 		Search theSearch = new Search();
 		
@@ -37,6 +34,7 @@ public class Main {
 		// guiFrame and globalPanel initialization
 		JFrame guiFrame = new JFrame("EightPuzzleSolver");
 		guiFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		guiFrame.setResizable(false);
 		
 		Container guiContent = guiFrame.getContentPane();
 		Dimension frameDimensions = new Dimension(500, 500);
@@ -84,7 +82,7 @@ public class Main {
 		// output JTextArea w/containing JPanel and JScrollPane initialization
 		JPanel outputPanel = new JPanel();
 		
-		JTextArea outputTextArea = new JTextArea(25, 40);
+		JTextArea outputTextArea = new JTextArea(25, 60);
 		Font outputFont = new Font("Courier", Font.PLAIN, 12);
 		outputTextArea.setFont(outputFont);
 		
@@ -159,17 +157,6 @@ public class Main {
 			
 		});
 		
-		JButton runCustom = new JButton("Custom");
-		runCustom.setMaximumSize(diffBtnSize);
-		runCustom.addActionListener(new ActionListener(){
-
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				runSearch.accept(custom);
-			}
-			
-		});
-		
 		
 		// inserting elements into their respective panels
 		globalPanel.add(searchType);
@@ -179,7 +166,6 @@ public class Main {
 		testButtonPanel.add(runEasy);
 		testButtonPanel.add(runMed);
 		testButtonPanel.add(runHard);
-		testButtonPanel.add(runCustom);
 		guiFrame.add(globalPanel);
 		
 		guiFrame.pack();

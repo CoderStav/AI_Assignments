@@ -25,6 +25,9 @@ public class Search{
 		public EightPuzzle puzzle;
 		public Node parent;
 		public int score = 0;
+		public int movedTile = 0; // last moved tile
+		public int direction = -1; // movement made to get to the current configuration. 
+		// 0 - right, 1 - down, 2 - left, 3 - up, -1 - none
 		
 		public Node(EightPuzzle puzzle, Node parent){
 			this.puzzle = new EightPuzzle(puzzle);
@@ -88,6 +91,12 @@ public class Search{
 		while(!WinningMoves.isEmpty()){
 			winMove = WinningMoves.pop();
 			winMove.puzzle.display();
+			
+			String[] directions = {"right\n", "down\n", "left\n", "up\n"};
+			
+			if(winMove.movedTile != 0 && winMove.direction != -1)
+				System.out.printf("%d %s", winMove.movedTile, directions[winMove.direction]);
+			System.out.printf("Score: %d\n", winMove.score);
 		}
 		System.out.println();
 		System.out.println("~~ Search Metrics ~~");
@@ -126,7 +135,7 @@ public class Search{
 		do{
 			statesChecked++;
 			
-			currentPuzzle = moveQueue.remove();
+			currentPuzzle = moveQueue.poll();
 			
 			if(currentPuzzle.puzzle.isSolved()){
 				displayWinMoves(currentPuzzle, statesChecked);
@@ -141,6 +150,8 @@ public class Search{
 				if(childMove > 0){
 					puzzleChild = new Node(new EightPuzzle(currentPuzzle.puzzle), currentPuzzle);
 					puzzleChild.puzzle.move(childMove);
+					puzzleChild.movedTile = childMove;
+					puzzleChild.direction = i;
 					
 					if(this.puzzlePermutations.contains(puzzleChild.puzzle)){
 						puzzleChild.score = currentPuzzle.score + childMove;
@@ -191,6 +202,8 @@ public class Search{
 				if(childMove > 0){
 					puzzleChild = new Node(new EightPuzzle(currentPuzzle.puzzle), currentPuzzle);
 					puzzleChild.puzzle.move(childMove);
+					puzzleChild.movedTile = childMove;
+					puzzleChild.direction = i;
 					
 					if(this.puzzlePermutations.contains(puzzleChild.puzzle)){
 						puzzleChild.score = currentPuzzle.score + childMove;
@@ -245,7 +258,6 @@ public class Search{
 			}
 			
 			possibleMoves = currentPuzzle.puzzle.possibleMoves();
-			
 			for(int i = 0; i < possibleMoves.length; ++i){
 				
 				childMove = possibleMoves[i];
@@ -253,6 +265,8 @@ public class Search{
 				if(childMove > 0){
 					puzzleChild = new Node(new EightPuzzle(currentPuzzle.puzzle), currentPuzzle);
 					puzzleChild.puzzle.move(childMove);
+					puzzleChild.movedTile = childMove;
+					puzzleChild.direction = i;
 					
 					if(this.puzzlePermutations.contains(puzzleChild.puzzle)){
 						puzzleChild.score = currentPuzzle.score + childMove;
@@ -316,6 +330,8 @@ public class Search{
 					
 					puzzleChild = new Node(new EightPuzzle(currentPuzzle.puzzle), currentPuzzle);
 					puzzleChild.puzzle.move(childMove);
+					puzzleChild.movedTile = childMove;
+					puzzleChild.direction = i;
 					
 					if(this.puzzlePermutations.contains(puzzleChild.puzzle)){
 						puzzleChild.score = currentPuzzle.score + childMove;
@@ -380,6 +396,8 @@ public class Search{
 					
 					puzzleChild = new Node(new EightPuzzle(currentPuzzle.puzzle), currentPuzzle);
 					puzzleChild.puzzle.move(childMove);
+					puzzleChild.movedTile = childMove;
+					puzzleChild.direction = i;
 					
 					if(this.puzzlePermutations.contains(puzzleChild.puzzle)){
 						puzzleChild.score = currentPuzzle.score + childMove;
@@ -452,6 +470,8 @@ public class Search{
 					
 					puzzleChild = new Node(new EightPuzzle(currentPuzzle.puzzle), currentPuzzle);
 					puzzleChild.puzzle.move(childMove);
+					puzzleChild.movedTile = childMove;
+					puzzleChild.direction = i;
 					
 					if(this.puzzlePermutations.contains(puzzleChild.puzzle)){
 						puzzleChild.score = currentPuzzle.score + childMove;
