@@ -40,7 +40,13 @@ public class Simacogo {
 	 */
 	public Simacogo(Simacogo c){
 		for(int i = 0; i < this.board.length; ++i)
-			this.board[i] = Arrays.copyOf(c.board[i], this.board[i].length);
+			this.board[i] = Arrays.copyOf(c.board[i], c.board[i].length);
+		
+		this.filledSpaces = Arrays.copyOf(c.filledSpaces, c.filledSpaces.length);
+		
+		this.boardWidth = c.boardWidth;
+		this.boardHeight = c.boardHeight;
+		
 	}
 	
 	/**
@@ -130,6 +136,9 @@ public class Simacogo {
 		if(!color.equals("black") && !color.equals("white"))
 			return false;
 		
+		if(this.filledSpaces[col] == this.boardHeight)
+			return false;
+		
 		for(int i = 0; i < this.boardHeight; ++i){
 			
 			if(board[i][col] != this.blankSpace){
@@ -139,7 +148,7 @@ public class Simacogo {
 				else if(color.equals("black"))
 					this.board[i-1][col] = 'B';
 				
-				this.filledSpaces[i-1]++;
+				this.filledSpaces[col]++;
 				
 				return true;
 				
@@ -150,7 +159,7 @@ public class Simacogo {
 				else if(color.equals("black"))
 					this.board[i][col] = 'B';
 				
-				this.filledSpaces[i]++;
+				this.filledSpaces[col]++;
 				
 				return true;
 			

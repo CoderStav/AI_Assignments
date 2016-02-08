@@ -61,9 +61,12 @@ public class AI {
 		if(ply == 0)
 			return board.score("white") - board.score("black");
 		
-		int moveScore;
+		int moveScore = Integer.MIN_VALUE;
 		int bestMove = 0;
-		int bestMoveScore = Integer.MIN_VALUE;
+		int bestMoveScore = Integer.MIN_VALUE+1;
+		
+		boolean validMove = false;
+		
 		Simacogo forkedBoard;
 		
 		for(int i = 0; i < 9; ++i){
@@ -71,11 +74,13 @@ public class AI {
 			forkedBoard = new Simacogo(board);
 			
 			if(AIMove){
-				forkedBoard.move(i, "white");
-				moveScore = this.bestMove(forkedBoard, ply - 1, false);
+				validMove = forkedBoard.move(i, "white");
+				if(validMove)
+					moveScore = this.bestMove(forkedBoard, ply - 1, false);
 			}else{
-				forkedBoard.move(i, "black");
-				moveScore = this.bestMove(forkedBoard, ply - 1, true);
+				validMove = forkedBoard.move(i, "black");
+				if(validMove)
+					moveScore = this.bestMove(forkedBoard, ply - 1, true);
 			}
 				
 			if(moveScore > bestMoveScore){
