@@ -30,10 +30,11 @@ public class AI {
 			// player executed move
 			System.out.print("Enter your next move: ");
 			userMove = userIn.nextInt();
-			this.gameBoard.move(userMove, "black");
-			
-			// AI executed move
-			this.gameBoard.move(this.bestMove(4), "white");
+			if(this.gameBoard.move(userMove, "black")){
+				// AI executed move
+				this.gameBoard.move(this.bestMove(4), "white");
+			}else
+				System.out.println("Invalid move");
 		}
 	}
 	

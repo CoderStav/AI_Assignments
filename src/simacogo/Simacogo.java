@@ -15,13 +15,21 @@ public class Simacogo {
 							  {blankSpace, blankSpace, blankSpace, blankSpace, blankSpace, blankSpace, blankSpace, blankSpace, blankSpace},
 							  {blankSpace, blankSpace, blankSpace, blankSpace, blankSpace, blankSpace, blankSpace, blankSpace, blankSpace}};
 	
-	private int[] filledSpaces = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+	private int boardWidth;
+	private int boardHeight;
+	private int[] filledSpaces;
 	
 	/**
 	 * Simacogo
 	 * Constructor - Instantiates a new game of Simacogo with an empty game board
 	 */
 	public Simacogo(){
+		this.boardWidth = this.board[0].length;
+		this.boardHeight = this.board.length;
+		
+		this.filledSpaces = new int[boardWidth];
+		for(int i = 0; i < this.filledSpaces.length; ++i)
+			this.filledSpaces[i] = 0;
 		
 	}
 	
@@ -44,7 +52,7 @@ public class Simacogo {
 	 */
 	private int scoreSpace(int x, int y, String color){
 		
-		if(x < 0 || x >= this.board.length)
+		if(x < 0 || x >= this.boardWidth)
 			return -1;
 		
 		char playerColor;
@@ -114,15 +122,15 @@ public class Simacogo {
 	 * @param col board column the piece is to be put down
 	 * @param color of the player's piece ("black", "white")
 	 */
-	public void move(int col, String color){
+	public boolean move(int col, String color){
 		
-		if(col < 0 || col > 9)
-			return;
+		if(col < 0 || col >= this.boardWidth)
+			return false;
 		
 		if(!color.equals("black") && !color.equals("white"))
-			return;
+			return false;
 		
-		for(int i = 0; i < this.board.length; ++i){
+		for(int i = 0; i < this.boardHeight; ++i){
 			
 			if(board[i][col] != this.blankSpace){
 				
@@ -133,9 +141,9 @@ public class Simacogo {
 				
 				this.filledSpaces[i-1]++;
 				
-				return;
+				return true;
 				
-			}else if(i == this.board.length-1){
+			}else if(i == this.boardHeight-1){
 				
 				if(color.equals("white"))
 					this.board[i][col] = 'W';
@@ -144,11 +152,12 @@ public class Simacogo {
 				
 				this.filledSpaces[i]++;
 				
-				return;
+				return true;
 			
 			}
 		}
 		
+		return false;
 	}
 	
 	/**
