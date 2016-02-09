@@ -8,6 +8,11 @@ public class GUIOutputStream extends OutputStream{
 
 	private JTextArea outputTA;
 	
+	/**
+	 * GUIOutputStream
+	 * Redirects console output to the specified swing JTextArea
+	 * @param outTA JTextArea to redirect console output to
+	 */
 	public GUIOutputStream(JTextArea outTA){
 		this.outputTA = outTA;
 	}

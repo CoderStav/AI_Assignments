@@ -182,7 +182,9 @@ public class Simacogo {
 		
 			System.out.print("\n");
 		}
-		System.out.print("\n");
+		for(int i = 0; i < this.boardWidth; ++i)
+			System.out.printf("%d ", i);
+		System.out.print("\n\n");
 		
 	}
 	
