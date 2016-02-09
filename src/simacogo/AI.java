@@ -4,6 +4,7 @@ import java.util.Scanner;
 public class AI {
 
 	Simacogo gameBoard;
+	int turnsLeft;
 	
 	/*
 	 * AI
@@ -13,29 +14,48 @@ public class AI {
 		this.gameBoard = new Simacogo();
 	}
 	
-	/**
-	 * playMe
-	 * Starts a new game of Simacogo with the AI.
-	 */
-	public void playMe(){
+	public void newGame(int numTurns){
+		this.gameBoard = new Simacogo();
+		this.turnsLeft = numTurns;
+	}
+	
+	public void executeMove(int move, int ai_moveply){
 		
-		Scanner userIn = new Scanner(System.in);
-		int userMove;
+		if(this.checkGameOver())
+			return;
 		
-		while(true){
-			this.gameBoard.display();
-			System.out.printf("Black: %d\n", this.gameBoard.score("black"));
-			System.out.printf("White: %d\n", this.gameBoard.score("white"));
-			
-			// player executed move
-			System.out.print("Enter your next move: ");
-			userMove = userIn.nextInt();
-			if(this.gameBoard.move(userMove, "black")){
-				// AI executed move
-				this.gameBoard.move(this.bestMove(4), "white");
-			}else
-				System.out.println("Invalid move");
-		}
+		if(this.gameBoard.move(move, "black")){
+			// AI executed move
+			this.gameBoard.move(this.bestMove(ai_moveply), "white");
+			this.turnsLeft--;
+		}else
+			System.out.println("Invalid move");
+		
+		this.gameBoard.display();
+		System.out.printf("Black: %d\n", this.gameBoard.score("black"));
+		System.out.printf("White: %d\n", this.gameBoard.score("white"));
+		System.out.printf("Turns Remaining: %d\n", this.turnsLeft);
+		
+		this.checkGameOver();
+		
+	}
+	
+	private boolean checkGameOver(){
+		if(this.turnsLeft > 0)
+			return false;
+		
+		int blackScore = this.gameBoard.score("black");
+		int whiteScore = this.gameBoard.score("white");
+		
+		System.out.println("Game Over!");
+		if(blackScore > whiteScore)
+			System.out.println("Player Wins!");
+		else if(blackScore < whiteScore)
+			System.out.println("Computer Wins!");
+		else
+			System.out.println("Tie Game!");
+		
+		return true;
 	}
 	
 	/**
