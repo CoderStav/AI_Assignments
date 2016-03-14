@@ -2,16 +2,53 @@ package babyNaming;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Random;
 import java.util.Set;
 
 public class NameGenerator {
 	
+	private Hashtable<String, Integer> dataset;
+	
 	private Random rng;
 	private Hashtable<String, Hashtable<Character, Double>> markovModel;
 	private int minNameLen;
 	private int maxNameLen;
+	private int order;
+	
+	private void fillDataset(int gender){
+		
+		this.dataset = new Hashtable<String, Integer>();
+		
+		MyFileReader nameFile = null;
+		try {
+			if(gender == 0)
+				nameFile = new MyFileReader("src/babyNaming/namesBoys.txt");
+			else
+				nameFile = new MyFileReader("src/babyNaming/namesGirls.txt");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			return;
+		}
+		
+		StringBuilder name;
+		int readStatus = 0;
+		int i = 0;
+		while(readStatus != -1){
+			name = new StringBuilder();
+			try {
+				readStatus = nameFile.readLine(name);
+			} catch (IOException e) { 
+				readStatus = -1;
+			}
+			this.dataset.put(name.toString().toLowerCase(), i++);
+		}
+		
+		try {
+			nameFile.close();
+		} catch (IOException e) { }
+	}
 	
 	/*
 	 * buildMarkovModel
@@ -33,42 +70,38 @@ public class NameGenerator {
 		 */
 		this.markovModel = new Hashtable<String, Hashtable<Character, Double>>();
 		
-		MyFileReader nameFile = null;
-		try {
-			if(gender == 0)
-				nameFile = new MyFileReader("src/babyNaming/namesBoys.txt");
-			else
-				nameFile = new MyFileReader("src/babyNaming/namesGirls.txt");
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return;
-		}
-		
-		StringBuilder name = new StringBuilder();
-		String nameString = new String();
-		int readStatus;
-		
-		try{
-			readStatus = nameFile.readLine(name);
-		}catch(IOException e){
-			readStatus = -1;
-		}
-		
-		while(readStatus != -1){
-			nameString = "__" + name.toString().toLowerCase() + "__";
+		String nameString;
+		for(String name : this.dataset.keySet()){
+			
+			nameString = "";
+			
+			for(int i = 0; i < this.order; ++i)
+				nameString += '_';
+			
+			nameString += name;
+			
+			for(int i = 0; i < this.order; ++i)
+				nameString += '_';
 			
 			/*
 			 * This loop reads all the two character substrings inside of a name
 			 */
 			for(int i = 0; i < nameString.length(); ++i){
-				if(i >= nameString.length()-1) break;
+				if(i >= nameString.length()-(this.order-1)) break;
 				
 				/*
-				 * Getting the next two character substring
+				 * Getting the next character substring
 				 */
 				String characterSequence = new String();
-				characterSequence += nameString.charAt(i);
-				characterSequence += nameString.charAt(i+1);
+				for(int j = 0; j < this.order; ++j)
+					characterSequence += nameString.charAt(i+j);
+				
+				char followingChar = '_';
+				try{
+					followingChar = nameString.charAt(i+this.order);
+				}catch(IndexOutOfBoundsException e){
+					break;
+				}
 				
 				/*
 				 * If the sequence being tested isn't inside markovModel,
@@ -78,16 +111,11 @@ public class NameGenerator {
 				 * entry.
 				 */
 				if(!this.markovModel.containsKey(characterSequence)){
-					Hashtable<Character, Double> probabilities = new Hashtable<Character, Double>();
-					probabilities.put('#', 1.0); // since we know something was found for this substring we can set the counter entry to 1
-					this.markovModel.put(characterSequence, probabilities);
+					Hashtable<Character, Double> probabilityTable = new Hashtable<Character, Double>();
+					probabilityTable.put('#', 1.0);
+					probabilityTable.put(followingChar, 1.0);
+					this.markovModel.put(characterSequence, probabilityTable);
 				}else{
-					char followingChar = '_';
-					try{
-						followingChar = nameString.charAt(i+2);
-					}catch(IndexOutOfBoundsException e){
-						break;
-					}
 					
 					Hashtable<Character, Double> probabilityTable = this.markovModel.get(characterSequence);
 					
@@ -98,24 +126,8 @@ public class NameGenerator {
 					
 					probabilityTable.put('#', probabilityTable.get('#') + 1);
 				}
-				
 			}
-			
-			/*
-			 * After reading all the substrings in the current name,
-			 * we read the next line from file and loop.
-			 */
-			name = new StringBuilder();
-			try{
-				readStatus = nameFile.readLine(name);
-			}catch(IOException e){
-				readStatus = -1;
-			}			
 		}
-		
-		try{
-			nameFile.close();
-		}catch(IOException e){ }
 	}
 	
 	private Hashtable<Character, Double[]> getProbabilities(String charSequence){
@@ -129,6 +141,8 @@ public class NameGenerator {
 		 */
 		Hashtable<Character, Double[]> probabilities = new Hashtable<Character, Double[]>();
 		
+		if(!this.markovModel.containsKey(charSequence))
+			return probabilities;
 		
 		Hashtable<Character, Double> probTable = this.markovModel.get(charSequence);
 		Set<Character> keys = probTable.keySet();
@@ -148,6 +162,7 @@ public class NameGenerator {
 	}
 	
 	private char nextCharacter(String charSequence){
+		
 		Hashtable<Character, Double[]> probabilities = this.getProbabilities(charSequence);
 		
 		/*
@@ -166,46 +181,63 @@ public class NameGenerator {
 		return '_';
 	}
 	
-	public NameGenerator(String gender, int minNameLen, int maxNameLen){
+	public NameGenerator(String gender, int minNameLen, int maxNameLen, int markovOrder){
 		
 		this.rng = new Random(System.currentTimeMillis());
 		
+		this.order = markovOrder;
 		this.minNameLen = minNameLen;
 		this.maxNameLen = maxNameLen;
 		
-		if(gender.equals("male"))
+		if(gender.equals("male")){
+			this.fillDataset(0);
 			this.buildMarkovModel(0);
-		else if(gender.equals("female"))
+		}else if(gender.equals("female")){
+			this.fillDataset(1);
 			this.buildMarkovModel(1);
+		}
+		
 	}
 	
 	private String generateName(String name){
 		String charSequence = name;
 		char nextChar;
 		int i = 0;
+		
 		do{
 			nextChar = this.nextCharacter(charSequence);
 			name += nextChar;
 			charSequence = "";
-			charSequence += name.charAt(++i);
-			charSequence += name.charAt(i+1);
+			++i;
+			for(int j = 0; j < this.order; ++j)
+				charSequence += name.charAt(i+j);
 		}while(nextChar != '_');
 		
-		return name.substring(1, name.length()-1);
+		return name.substring((this.order-1), name.length()-1);
 	}
 	
 	public String generateName(){
-		String chars = "abcdefghijklmnopqrstuvwxyz";
-		String name, generatedName;
 		
-		generatedName = "";
-		while(generatedName.length() < this.minNameLen || generatedName.length() > this.maxNameLen){
+		String chars = "abcdefghijklmnopqrstuvwxyz";
+		String name, startString, generatedName;
+		
+		generatedName = "\u00A0"; // String with unused ASCII character, can't possibly be within dataset
+		while(generatedName.length() < this.minNameLen || generatedName.length() > this.maxNameLen || this.dataset.containsKey(generatedName)){
 			try{
-				generatedName = this.generateName("_" + chars.charAt(this.rng.nextInt(26)));
-			}catch(NullPointerException e){ }
+				
+				startString = "";
+				for(int i = 0; i < this.order-1; ++i)
+					startString += '_';
+				startString += chars.charAt(this.rng.nextInt(26));
+				
+				generatedName = this.generateName(startString);
+				
+			}catch(NullPointerException e){ 
+				e.printStackTrace();
+			}
 		}
 		
-		return generatedName;
+		return generatedName.toString();
 	}
 	
 }
