@@ -2,7 +2,6 @@ package babyNaming;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Random;
 import java.util.Set;
@@ -10,13 +9,20 @@ import java.util.Set;
 public class NameGenerator {
 	
 	private Hashtable<String, Integer> dataset;
+	private Hashtable<String, Hashtable<Character, Double>> markovModel;
 	
 	private Random rng;
-	private Hashtable<String, Hashtable<Character, Double>> markovModel;
+
 	private int minNameLen;
 	private int maxNameLen;
 	private int order;
 	
+	/**
+	 * fillDataset
+	 * Reads data from file and inserts it line-by-line into the
+	 * dataset Hashtable
+	 * @param gender The gendered file of names to load: 0 - male, 1 - female
+	 */
 	private void fillDataset(int gender){
 		
 		this.dataset = new Hashtable<String, Integer>();
@@ -50,9 +56,11 @@ public class NameGenerator {
 		} catch (IOException e) { }
 	}
 	
-	/*
+	/**
 	 * buildMarkovModel
-	 * builds a Markov model from a dataset
+	 * Builds a Order-N Markov model in the markovModel Hashtable based on data
+	 * in the dataset Hashtable
+	 * @param gender
 	 */
 	private void buildMarkovModel(int gender){
 		String chars = "abcdefghijklmnopqrstuvwxyz_";
@@ -181,6 +189,13 @@ public class NameGenerator {
 		return '_';
 	}
 	
+	/**
+	 * Constructor
+	 * @param gender Gender of the names to be generated
+	 * @param minNameLen Minimum length of the names to be generated
+	 * @param maxNameLen Maximum length of the names to be generated
+	 * @param markovOrder Order of the Markov chain
+	 */
 	public NameGenerator(String gender, int minNameLen, int maxNameLen, int markovOrder){
 		
 		this.rng = new Random(System.currentTimeMillis());
@@ -199,6 +214,13 @@ public class NameGenerator {
 		
 	}
 	
+	/**
+	 * generateName
+	 * private helper method
+	 * generates name according to NameGenerator's settings
+	 * @param name Initial "seed" string
+	 * @return Generated name
+	 */
 	private String generateName(String name){
 		String charSequence = name;
 		char nextChar;
@@ -216,12 +238,17 @@ public class NameGenerator {
 		return name.substring((this.order-1), name.length()-1);
 	}
 	
+	/**
+	 * generateName
+	 * generates name according to NameGenerator's settings
+	 * @return Generated name
+	 */
 	public String generateName(){
 		
 		String chars = "abcdefghijklmnopqrstuvwxyz";
-		String name, startString, generatedName;
+		String startString, generatedName;
 		
-		generatedName = "\u00A0"; // String with unused ASCII character, can't possibly be within dataset
+		generatedName = "";
 		while(generatedName.length() < this.minNameLen || generatedName.length() > this.maxNameLen || this.dataset.containsKey(generatedName)){
 			try{
 				
