@@ -82,7 +82,12 @@ public class NameGenerator {
 					probabilities.put('#', 1.0); // since we know something was found for this substring we can set the counter entry to 1
 					this.markovModel.put(characterSequence, probabilities);
 				}else{
-					char followingChar = nameString.charAt(i+2);
+					char followingChar = '_';
+					try{
+						followingChar = nameString.charAt(i+2);
+					}catch(IndexOutOfBoundsException e){
+						break;
+					}
 					
 					Hashtable<Character, Double> probabilityTable = this.markovModel.get(characterSequence);
 					
